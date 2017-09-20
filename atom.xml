@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>萌麒麒</title>
+  
+  <subtitle>慢慢程序人生路</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://lijiaqi.name/"/>
+  <updated>2017-09-20T07:52:13.559Z</updated>
+  <id>http://lijiaqi.name/</id>
+  
+  <author>
+    <name>Jack &#39;dafei1288&#39; Li</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>怎么通过CURL下载JDK</title>
+    <link href="http://lijiaqi.name/2015/08/10/2015-08-10-hows-to-download-jdk-use-curl/"/>
+    <id>http://lijiaqi.name/2015/08/10/2015-08-10-hows-to-download-jdk-use-curl/</id>
+    <published>2015-08-09T16:00:00.000Z</published>
+    <updated>2017-09-20T07:52:13.559Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>curl -v -j -k -L -H “Cookie: oraclelicense=accept-securebackup-cookie” <a href="http://download.oracle.com/otn-pub/java/jdk/8u51-b16/jdk-8u51-linux-x64.tar.gz" target="_blank" rel="external">http://download.oracle.com/otn-pub/java/jdk/8u51-b16/jdk-8u51-linux-x64.tar.gz</a> &gt; jdk-8u51-linux-x64.tar.gz</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;curl -v -j -k -L -H “Cookie: oraclelicense=accept-securebackup-cookie” &lt;a href=&quot;http://download.oracle.com/otn-pub/java/jdk/
+      
+    
+    </summary>
+    
+      <category term="Hack" scheme="http://lijiaqi.name/categories/Hack/"/>
+    
+    
+      <category term="Geek" scheme="http://lijiaqi.name/tags/Geek/"/>
+    
+      <category term="Java" scheme="http://lijiaqi.name/tags/Java/"/>
+    
+      <category term="curl" scheme="http://lijiaqi.name/tags/curl/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>2014书单</title>
+    <link href="http://lijiaqi.name/2014/12/24/2014-12-24-book-list-of-2014/"/>
+    <id>http://lijiaqi.name/2014/12/24/2014-12-24-book-list-of-2014/</id>
+    <published>2014-12-23T16:00:00.000Z</published>
+    <updated>2017-09-20T07:52:03.795Z</updated>
+    
+    <content type="html"><![CDATA[<p>今年买了很多书,第一次想起来做了一个书单,总计一下还是吓了一跳的</p><blockquote><p>总共花了<strong>￥1500</strong>,买了<strong>33</strong>本书,</p><p>从京东购买<strong>19</strong>本,china-pub上购买<strong>14</strong>本,</p><p>购买了经济类的书<strong>4</strong>本，小说<strong>4</strong>本，计算机类<strong>25</strong>本</p><p>3月买了<strong>5</strong>本，5月买了<strong>14</strong>本，7月买了<strong>4</strong>本，8月买了<strong>1</strong>本，10月买了<strong>3</strong>本，12月买了<strong>6</strong>本。</p></blockquote><p><img src="/img/postresource/2014books/dianshang.png" alt="购买来源统计"></p><p><img src="/img/postresource/2014books/fenlei.png" alt="图书分类统计"></p><p><img src="/img/postresource/2014books/yuefen.png" alt="购买时间统计"></p><p>##小说<br><strong>魔兽世界：战争之潮</strong></p><p><strong>魔兽世界·萨尔：巨龙的黄昏</strong></p><p><strong>魔兽世界·沃金：部落的暗影</strong></p><p><strong>魔兽世界：战争罪行</strong></p><p>##经济<br><strong>爆发：大数据时代预见未来的新思维</strong></p><p><strong>商业模式新生代</strong></p><p><strong>赢在互联网思维：写给下一个十年的企业领袖们</strong></p><p><strong>创业者手册：教你如何构建伟大的企业</strong></p><p>##计算机<br><strong>大型网站系统与Java中间件实践</strong></p><p><strong>Java 7并发编程实战手册</strong></p><p><strong>Spark快速数据处理</strong></p><p><strong>Hadoop技术内幕：深入解析YARN架构设计与实现原理</strong></p><p><strong>大规模分布式存储系统：原理解析与架构实战</strong></p><p><strong>数据分析：企业的贤内助</strong></p><p><strong>敏捷数据科学：用Hadoop创建数据分析应用</strong></p><p><strong>WebKit技术内幕</strong></p><p><strong>两周自制脚本语言</strong></p><p><strong>图灵程序设计丛书：图解HTTP</strong></p><p><strong>Netty权威指南</strong></p><p><strong>JavaScript启示录</strong></p><p><strong>扩展jQuery</strong></p><p><strong>单页Web应用：JavaScript前端</strong></p><p><strong>数据库查询优化器的艺术：原理解析与SQL性能优化</strong></p><p><strong>Java虚拟机规范(Java SE 7版)</strong></p><p><strong>深入理解Java虚拟机：JVM高级特性与最佳实践(第2版)</strong></p><p><strong>jQuery技术内幕：深入解析jQuery架构设计与实现原理</strong></p><p><strong>Java性能优化权威指南</strong></p><p><strong>MongoDB权威指南(第2版)</strong></p><p><strong>高性能Linux服务器构建实战:运维监控</strong></p><p><strong>Linux+树莓派玩转智能家居(第2版)</strong></p><p><strong>Python自动化运维：技术与最佳实践</strong></p><p><strong>Unity3D手机游戏开发</strong></p><p><strong>第一本Docker书</strong></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;今年买了很多书,第一次想起来做了一个书单,总计一下还是吓了一跳的&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;总共花了&lt;strong&gt;￥1500&lt;/strong&gt;,买了&lt;strong&gt;33&lt;/strong&gt;本书,&lt;/p&gt;
+&lt;p&gt;从京东购买&lt;strong&gt;19&lt;/strong&gt;本
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="Geek" scheme="http://lijiaqi.name/tags/Geek/"/>
+    
+      <category term="book" scheme="http://lijiaqi.name/tags/book/"/>
+    
+      <category term="Java" scheme="http://lijiaqi.name/tags/Java/"/>
+    
+      <category term="unity" scheme="http://lijiaqi.name/tags/unity/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello 魅族!</title>
+    <link href="http://lijiaqi.name/2014/12/09/2014-12-09-open-box-meizu/"/>
+    <id>http://lijiaqi.name/2014/12/09/2014-12-09-open-box-meizu/</id>
+    <published>2014-12-08T16:00:00.000Z</published>
+    <updated>2017-09-20T07:51:50.522Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="开箱"><a href="#开箱" class="headerlink" title="开箱"></a>开箱</h1><p>魅族MX4 Pro 终于到货了,<br>先做了一个开箱</p><iframe height="498" width="510" src="http://player.youku.com/embed/XODQ0NjQ1NzAw" frameborder="0" allowfullscreen></iframe><p>开完箱之后,</p><p>简单的使用了一会儿,</p><p>#第一个感觉,</p><p>魅族实现了他们说的权限控制,但是你不用上来全问我一边吧,</p><p>开启任何一个应用,就要问一遍,</p><p>我觉得有点矫情了…..</p><p>#第二个感觉</p><p>没有菜单界面,</p><p>也许是我没找到,</p><p>反正目前看没有,</p><p>感觉不适很适应</p><p>#第三个感觉</p><p>默认安装应用不多,</p><p>界面和系统很清爽</p><p>#关于照相</p><p>这个我个人不适太注重的功能</p><p>不过试了试,感觉色彩比较艳</p><p>而且拍照总给人感觉信心不足…..</p><p>以待后续观察</p><p>#整体感受</p><p>这个手机还是不错的,</p><p>目前看照相功能略差,</p><p>指纹识别像当年快,</p><p>用来看书或看视频真的挺棒,</p><p>屏幕值得夸奖</p><p>#使用后体验</p><p>照相越发的感觉信心不足</p><p>和车载蓝牙连接不好,接电话断断续续的,根本无法正常使用……</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;开箱&quot;&gt;&lt;a href=&quot;#开箱&quot; class=&quot;headerlink&quot; title=&quot;开箱&quot;&gt;&lt;/a&gt;开箱&lt;/h1&gt;&lt;p&gt;魅族MX4 Pro 终于到货了,&lt;br&gt;先做了一个开箱&lt;/p&gt;
+&lt;iframe height=&quot;498&quot; width=&quot;510&quot; src=&quot;
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="科技" scheme="http://lijiaqi.name/tags/%E7%A7%91%E6%8A%80/"/>
+    
+      <category term="手机" scheme="http://lijiaqi.name/tags/%E6%89%8B%E6%9C%BA/"/>
+    
+      <category term="独客第" scheme="http://lijiaqi.name/tags/%E7%8B%AC%E5%AE%A2%E7%AC%AC/"/>
+    
+      <category term="魅族" scheme="http://lijiaqi.name/tags/%E9%AD%85%E6%97%8F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>sublime api doc</title>
+    <link href="http://lijiaqi.name/2014/11/28/2014-11-28-sublime-api/"/>
+    <id>http://lijiaqi.name/2014/11/28/2014-11-28-sublime-api/</id>
+    <published>2014-11-27T16:00:00.000Z</published>
+    <updated>2017-09-20T07:51:38.120Z</updated>
+    
+    <content type="html"><![CDATA[<p>Sublime作为一款13格很高的插件,起扩展开发和使用相信很多人都很愿意尝试一下.</p><p>在现在普遍IDE都很吃资源的情况下,有一款顺手的工具还是很不错的!</p><p>V2:<br><a href="http://www.tuicool.com/articles/QnMbUv" target="_blank" rel="external">http://www.tuicool.com/articles/QnMbUv</a></p><p>V3:<br><a href="http://www.sublimetext.com/docs/3/api_reference.html" target="_blank" rel="external">http://www.sublimetext.com/docs/3/api_reference.html</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;Sublime作为一款13格很高的插件,起扩展开发和使用相信很多人都很愿意尝试一下.&lt;/p&gt;
+&lt;p&gt;在现在普遍IDE都很吃资源的情况下,有一款顺手的工具还是很不错的!&lt;/p&gt;
+&lt;p&gt;V2:&lt;br&gt;&lt;a href=&quot;http://www.tuicool.com/article
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="Sublime" scheme="http://lijiaqi.name/tags/Sublime/"/>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/tags/Geek/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Night watcher swear</title>
+    <link href="http://lijiaqi.name/2014/11/11/2014-11-11-night-watch/"/>
+    <id>http://lijiaqi.name/2014/11/11/2014-11-11-night-watch/</id>
+    <published>2014-11-10T16:00:00.000Z</published>
+    <updated>2017-09-20T07:51:28.328Z</updated>
+    
+    <content type="html"><![CDATA[<p>由于之前JAVAZONE那个短片的原因，我开始看《权利游戏》了，以前就有同事推荐过，可惜那时候没看，这次看了下，感觉还真不错。</p><p>尤其在看到野蛮人在攻打长城的时候，5个乌鸦和那个巨人搏斗的时候，一起高呼着守夜人的誓言，很震撼。</p><blockquote><p>Night watcher swear：</p><blockquote><p>Night gathers, and now my watch begins. It shall not end until my death.</p><p>I shall take no wife, hold no lands, father no children.</p><p>I shall wear no crowns and win no glory.</p><p>I shall live and die at my post.</p><p>I am the sword in the darkness. I am the watcher on the walls.</p><p>I am the fire that burns against the cold, the light that brings the dawn, the horn that wakes the sleepers, the shield that guards the realms of men.</p><p>I pledge my life and honor to the Night’s Watch, for this night and all the nights to come.</p></blockquote><p>守夜人誓言：</p><blockquote><p>长夜将至，我从今开始守望，至死方休。</p><p>我将不娶妻、不封地、不生子。</p><p>我将不戴宝冠，不争荣宠。</p><p>我将尽忠职守，生死於斯。</p><p>我是黑暗中的利剑，长城上的守卫。</p><p>我是抵御寒冷的烈焰，破晓时分的光线，唤醒眠者的号角，守护王国的坚盾。</p><p>我将生命与荣耀献给守夜人，今夜如此，夜夜皆然。</p></blockquote></blockquote><p><a href="http://tieba.baidu.com/p/1038368257" target="_blank" rel="external">http://tieba.baidu.com/p/1038368257</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;由于之前JAVAZONE那个短片的原因，我开始看《权利游戏》了，以前就有同事推荐过，可惜那时候没看，这次看了下，感觉还真不错。&lt;/p&gt;
+&lt;p&gt;尤其在看到野蛮人在攻打长城的时候，5个乌鸦和那个巨人搏斗的时候，一起高呼着守夜人的誓言，很震撼。&lt;/p&gt;
+&lt;blockquote&gt;
+
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="Night watcher" scheme="http://lijiaqi.name/tags/Night-watcher/"/>
+    
+      <category term="Game of Thrones" scheme="http://lijiaqi.name/tags/Game-of-Thrones/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello docker</title>
+    <link href="http://lijiaqi.name/2014/10/31/2014-10-31-hello_docker/"/>
+    <id>http://lijiaqi.name/2014/10/31/2014-10-31-hello_docker/</id>
+    <published>2014-10-30T16:00:00.000Z</published>
+    <updated>2017-09-20T07:51:21.401Z</updated>
+    
+    <content type="html"><![CDATA[<p>推荐一篇非常好的 docker 入门文章.</p><blockquote><p><a href="https://docker.cn/p/docker-base-dockerfile-java-dev" target="_blank" rel="external">https://docker.cn/p/docker-base-dockerfile-java-dev</a></p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;推荐一篇非常好的 docker 入门文章.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://docker.cn/p/docker-base-dockerfile-java-dev&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ht
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="java" scheme="http://lijiaqi.name/tags/java/"/>
+    
+      <category term="docker" scheme="http://lijiaqi.name/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Javazone 微电影</title>
+    <link href="http://lijiaqi.name/2014/10/21/2014-10-21-javazone/"/>
+    <id>http://lijiaqi.name/2014/10/21/2014-10-21-javazone/</id>
+    <published>2014-10-20T16:00:00.000Z</published>
+    <updated>2017-09-20T07:51:15.713Z</updated>
+    
+    <content type="html"><![CDATA[<p>　　<br>一直以来非常喜欢的JAVAZONE的这个系列微电影</p><p>JavaZone一直有恶搞电影的传统。JavaZone截止到今年(2014)一共制作了5个Java相关的视频，它们分别是：</p><ul><li><p>2009年的<a href="http://www.vaikan.com/lady-java/" target="_blank" rel="external">《Lady Java》</a></p></li><li><p>2010年的<a href="http://www.aqee.net/microsoft-net-vs-java-trailer/" target="_blank" rel="external">《Java风云》</a></p></li><li><p>2012年的<a href="http://www.aqee.net/javazone-2012-the-java-heist/" target="_blank" rel="external">《Java打劫》</a></p></li><li><p>2013年的<a href="http://www.aqee.net/javazone-x-the-streaming-texted-version/" target="_blank" rel="external">《Java阴魂不散》</a></p></li><li><p>2013年的<a href="http://www.tudou.com/v/mqw47w3OAJ0/&amp;rpid=82299297&amp;resourceId=82299297_04_05_99/v.swf" target="_blank" rel="external">《Java世界末日》</a></p></li><li><p>2014年的<a href="http://v.youku.com/v_show/id_XNzU3MDIxNDA0.html" target="_blank" rel="external">《Game of Codes》</a></p></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;　　&lt;br&gt;一直以来非常喜欢的JAVAZONE的这个系列微电影&lt;/p&gt;
+&lt;p&gt;JavaZone一直有恶搞电影的传统。JavaZone截止到今年(2014)一共制作了5个Java相关的视频，它们分别是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;2009年的&lt;a href=&quot;http:
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="java" scheme="http://lijiaqi.name/tags/java/"/>
+    
+      <category term="javazone" scheme="http://lijiaqi.name/tags/javazone/"/>
+    
+      <category term="movie" scheme="http://lijiaqi.name/tags/movie/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Most Useful Sublime Text Shortcuts</title>
+    <link href="http://lijiaqi.name/2014/10/16/2014-10-16-sublime/"/>
+    <id>http://lijiaqi.name/2014/10/16/2014-10-16-sublime/</id>
+    <published>2014-10-15T16:00:00.000Z</published>
+    <updated>2017-09-20T07:51:07.888Z</updated>
+    
+    <content type="html"><![CDATA[<p>Most Useful Sublime Text Shortcuts<br>*. ctrl + k + b   for hiding and showing the sidebar.</p><p>*. F11 for using sublime in full screen mode</p><p>*. ctrl + / for commenting a selected block of code</p><p>*. ctrl+k+u for changing selected text to uppercase</p><p>*. ctrl+k+l for changing selected text to lowercase</p><p>*. shift + F11 for distraction free code editing</p><p>*. ctrl + shift + p for package control</p><p>*. ctrl + p to search for file in the current project window</p><p>*. ctrl  + m for finding the matching bracket</p><p>*. ctrl + shift + ↑  for swapping a line upwards</p><p>*. ctrl + shift + ↓ for swapping a line downwards.</p><p>*. ctrl + shift + d for duplicating a line</p><p>*. ctrl + j for joining a line</p><p>*. ctrl + enter for creating a new line</p><p>*. ctrl + f for finding occurrence of string in the current file</p><p>*. ctrl + h for finding and replacing string in the current file</p><p>*. ctrl + w for closing the current tab</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;Most Useful Sublime Text Shortcuts&lt;br&gt;*. ctrl + k + b   for hiding and showing the sidebar.&lt;/p&gt;
+&lt;p&gt;*. F11 for using sublime in full scree
+      
+    
+    </summary>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/categories/Geek/"/>
+    
+    
+      <category term="Sublime" scheme="http://lijiaqi.name/tags/Sublime/"/>
+    
+      <category term="Geek" scheme="http://lijiaqi.name/tags/Geek/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>再见,我锤</title>
+    <link href="http://lijiaqi.name/2014/09/24/2014-09-24-bye-smartisan_T1/"/>
+    <id>http://lijiaqi.name/2014/09/24/2014-09-24-bye-smartisan_T1/</id>
+    <published>2014-09-23T16:00:00.000Z</published>
+    <updated>2017-09-20T07:50:57.380Z</updated>
+    
+    <content type="html"><![CDATA[<p>怀着忐忑的心情还是把我锤退了,</p><p>上下加一起使用了9天,</p><p>最终还是决定退了.</p><p>仅从手机上看,</p><p>还算可以,</p><p>但是其他方面也伴随着问题,</p><p>双镜面的设计,</p><p>看上去真的是工艺品,</p><p>但是真正在实际使用的时候,</p><p>不得不为它戴上套,</p><p>一者是其指纹收集器的特性,</p><p>另外,怕滑落摔伤.</p><p>在背盖的问题上,</p><p>之前做开箱的时候已经说过了,</p><p>我真心觉得 罗胖 自己绝对没有做过开箱,</p><p>他丫的肉手时如何捏着这个螺丝的?并成功地拧在背盖上的.</p><p>另外,如果我的螺丝刀丢了的话,是否意味着 我的卡也完蛋了,</p><p>或许到那个时候,身边还有其他人在使用锤子.</p><p>在整体的操作系统上使用,</p><p>客观上说还是不错的,</p><p>一些动画细节很细腻,</p><p>但是感觉还不够,</p><p>天气和日历都会有变化效果,</p><p>为什么时间那里没有呢?</p><p>锤子不支持OTG,</p><p>这也不要紧，</p><p>但是，对这个问题的回复却是</p><p>“这不是一个问题”</p><p>好吧，作为一个从小听着“老罗语录”长起来的，</p><p>我还是希望锤子能有更光明的未来。</p><p>希望锤子2，可以留在身边使用。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;怀着忐忑的心情还是把我锤退了,&lt;/p&gt;
+&lt;p&gt;上下加一起使用了9天,&lt;/p&gt;
+&lt;p&gt;最终还是决定退了.&lt;/p&gt;
+&lt;p&gt;仅从手机上看,&lt;/p&gt;
+&lt;p&gt;还算可以,&lt;/p&gt;
+&lt;p&gt;但是其他方面也伴随着问题,&lt;/p&gt;
+&lt;p&gt;双镜面的设计,&lt;/p&gt;
+&lt;p&gt;看上去真的是工艺品,&lt;/p&gt;
+      
+    
+    </summary>
+    
+      <category term="科技" scheme="http://lijiaqi.name/categories/%E7%A7%91%E6%8A%80/"/>
+    
+    
+      <category term="科技" scheme="http://lijiaqi.name/tags/%E7%A7%91%E6%8A%80/"/>
+    
+      <category term="手机" scheme="http://lijiaqi.name/tags/%E6%89%8B%E6%9C%BA/"/>
+    
+      <category term="独客第" scheme="http://lijiaqi.name/tags/%E7%8B%AC%E5%AE%A2%E7%AC%AC/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Smartisan T1(锤子)开箱</title>
+    <link href="http://lijiaqi.name/2014/09/16/2014-09-16-smartisan_T1/"/>
+    <id>http://lijiaqi.name/2014/09/16/2014-09-16-smartisan_T1/</id>
+    <published>2014-09-15T16:00:00.000Z</published>
+    <updated>2017-09-20T07:50:51.139Z</updated>
+    
+    <content type="html"><![CDATA[<p>周六本来发货的，但是地址写的公司只能呢拖到周一了。回到家，等家人休息了，才开始录制视频。急急忙忙的录完了，就开始玩了。锤子的机器拿在手里，感觉不错，有点IPONE4的味道，但是从个人角度出发，槽点还是有的，没录到视频里，这里补充下吧。</p><ol><li><p>后盖开启，真心无所适从，鼓捣了20分钟以后，宣告失败，然后寻求度娘才得以解决。必须几个指头同时推后盖才可以，阿门，本来就是一个指纹收集器，然后这样的开盖方式，确实不太爽，还不如魅族的“瓶起子”呢</p></li><li><p>那个精致的螺丝刀，本身体胖，手指头本来就粗，然后开了半天后盖，满手湿润的爪子再去拿那个，简直画美不看。。。。 最后去拿了条毛巾，隔着毛巾取出来的。。。</p></li><li><p>再来说说那个螺丝和后盖,我真想骂娘了…  那么点小的螺丝不说,而且头也那么小,没有磁力,让我这种手怎么拿这个螺丝,我真想问问罗胖自己为这个手机上过螺丝么?</p></li></ol><p>暂时这点，其他回来再吐</p><iframe height="498" width="510" src="http://player.youku.com/embed/XNzgzMjEzMTcy" frameborder="0" allowfullscreen></iframe>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;周六本来发货的，但是地址写的公司只能呢拖到周一了。回到家，等家人休息了，才开始录制视频。急急忙忙的录完了，就开始玩了。锤子的机器拿在手里，感觉不错，有点IPONE4的味道，但是从个人角度出发，槽点还是有的，没录到视频里，这里补充下吧。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;后盖开
+      
+    
+    </summary>
+    
+      <category term="科技" scheme="http://lijiaqi.name/categories/%E7%A7%91%E6%8A%80/"/>
+    
+    
+      <category term="科技" scheme="http://lijiaqi.name/tags/%E7%A7%91%E6%8A%80/"/>
+    
+      <category term="手机" scheme="http://lijiaqi.name/tags/%E6%89%8B%E6%9C%BA/"/>
+    
+      <category term="独客第" scheme="http://lijiaqi.name/tags/%E7%8B%AC%E5%AE%A2%E7%AC%AC/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>翻译：魔兽世界游戏电影《上古之战：永恒之井》</title>
+    <link href="http://lijiaqi.name/2014/09/06/2014-09-06-the_well_of_eternity/"/>
+    <id>http://lijiaqi.name/2014/09/06/2014-09-06-the_well_of_eternity/</id>
+    <published>2014-09-05T16:00:00.000Z</published>
+    <updated>2017-09-20T07:50:44.162Z</updated>
+    
+    <content type="html"><![CDATA[<p>转载自NGA : <a href="http://bbs.ngacn.cc/read.php?tid=7332346" target="_blank" rel="external">http://bbs.ngacn.cc/read.php?tid=7332346</a></p><p><img src="/img/postresource/the_well_of_eternity.jpg" alt=""></p><p>##《上古之战：永恒之井》内容介绍<br>卡利姆多山脉间的一个神秘的能量黑洞将三位曾在沙场搏杀的勇士带到了远古——一个兽人、人类、甚至高等精灵都还未诞生的时代。那时，黑暗泰坦巨人萨格拉斯和他的爪牙正极力怂恿着艾萨拉女王和她的高等精灵们去清洗艾泽拉斯大地上的低等种族。那时，守护巨龙也正处于他们的极盛期……然而不久他们中的一位就会将这个世界导入无尽的黑暗中……</p><p>##人物：Keytal<br>Keytal是一位来自匈牙利首都布达佩斯的设计师，主要从事数字艺术，影音编辑，多媒体开发等工作。对游戏、创作、设计的狂热和喜爱，让这位现年32岁的艺术家和朋友们制作了这部耗时四年的魔兽大片，Keytal主导了这部游戏电影的制作，负责整个的策划、导演、程序脚本等兼需艺术与技术的工作。Keytal几乎拥有了自己的小团队，模型制作，配音演员等，的确是一项复杂繁琐的工作。<br>Keytal的个人网址：[<a href="http://norbertszilagyi.com/]，就是他本人的名字，诺伯特齐拉吉.com，网站上主要是他的个人简介、工作经历，作品介绍等，怎么样，拥有一个自己名字的网站，是不是很酷？" target="_blank" rel="external">http://norbertszilagyi.com/]，就是他本人的名字，诺伯特齐拉吉.com，网站上主要是他的个人简介、工作经历，作品介绍等，怎么样，拥有一个自己名字的网站，是不是很酷？</a></p><p>##人物：Vaanel<br>早在前两年，欧洲一位玩家个人制作的魔兽世界模型让我们眼前一亮，他就是被玩家们称为模型达人的Vaanel，今天搜索Vannel，仍然能看到很多很多过去各家媒体的报道。为了帮助朋友完成拍摄一部关于魔兽电影的的梦想，他根据原著小说等资料创作了游戏内没有的模型，这点的确难能可贵。<br>Vaanel表示，原本与Keytal商议打算涵盖到整个故事，但制作内容如果面面俱到的话，整个电影会很长，并且这项工作也会变得无比繁杂。于是做出了妥协，将故事分成2个部分来制作。所以当某些事件并没按照小说的顺序来进行的话，大家不要觉得惊奇怪。</p><p>##关键词：Machinima、World Editor<br>百度百科：“ Machinima ”这个单词由“ Mechanical Cinema ”合并而成，直译为“机械电影”，准确一点可以译为“引擎电影”，其实把“Machinima”称为“游戏电影”或许更为恰当。<br>文中提到“引擎电影”，那么引擎是什么呢？打个比方说，我们在一个大桌子上玩乐高积木，但乐高小人和积木可以在程序的控制下，存在交互，发生各种事件等，而这一整套系统就等于一个“引擎”。在Keytal对影片的介绍中提到：他使用了World Editor作为引擎制作了很多内容。World Editor就是暴雪的魔兽争霸地图编辑器，这是一个功能非常强大的神器，可以制作游戏，或用镜头拍摄一些视频等。Dota就是由World Editor制作而成的一个对战地图，而今天，这种对战模式几乎成为了一个独立的游戏类型。如果能熟练的使用各类游戏引擎来制作一些作品，你也可以成为一个世界的造物主。<br>Keytal将魔兽世界的模型，和Vaanel制作的独家模型导入了World Editor，完成了一系列的工作。</p><p>##关键词：上古之战<br>上古之战是魔兽世界背景故事系列的官方小说三部曲。<br>作者：理查德·A.纳克。(Richard A. Knaak)1961年5月28日生于美国芝加哥城，他的众多作品被翻译成十几种语言在世界各地陆续出版。理查德参与撰写了 Dragonlance 、Dragonrealm、Diablo、Warcraft系列小说，其中后两者被美国暴雪娱乐(Blizzard Entertainment’s)作为官方游戏背景。<br>上古之战三部曲包括：永恒之井、恶魔之魂、天崩地裂。</p><p>##译制工作<br>与大家相同，我也是一名忠实的魔兽世界玩家，对我们来说，这不仅仅是一款网络游戏。游戏和英语的爱好，让我完成了这部游戏电影的翻译。受到各方面客观条件的影响，译制的过程也十分纠结。从国外的网站下载视频，网络状况本身就存在不稳定，而小城市的4M地方水管更是让这雪上加霜。曾经一度下载到95%然后突然断掉，无法恢复连接只能重新下载。译制工作可以大体分两个主要过程，一是观看原片文本翻译，二是软件制作添加字幕。除此之外，需要的更多是，耐心。经过两周的努力，最终完成了中字版的译制工作，由于疏忽和不足，难免出现一些错误错字，影响了最终效果，望大家见谅。<br>在了解了国外的一些情况后，回头再来看我们自己，对于我们这些玩着游戏长大的人来说，不禁黯然伤神。对游戏的偏见和环境氛围的缺失，导致了落后。在这两周的时间里，家人反对的刺耳话语和冷嘲热讽……在这种需要先吃饭的时代，只有痛苦和无奈。做中国人自己真正意义上的游戏，是下一代人的任务，我们这代人的任务是，改变落后的思想，消除游戏的偏见。要想实现梦想，先必须存在一个尊重梦想的氛围。</p><p>游戏万岁。</p><iframe height="498" width="510" src="http://player.youku.com/embed/XNzY5NzY4MTA4" frameborder="0" allowfullscreen></iframe><p>转载自NGA : <a href="http://bbs.ngacn.cc/read.php?tid=7332346" target="_blank" rel="external">http://bbs.ngacn.cc/read.php?tid=7332346</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;转载自NGA : &lt;a href=&quot;http://bbs.ngacn.cc/read.php?tid=7332346&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bbs.ngacn.cc/read.php?tid=7332346&lt;/a&gt;&lt;/
+      
+    
+    </summary>
+    
+      <category term="魔兽" scheme="http://lijiaqi.name/categories/%E9%AD%94%E5%85%BD/"/>
+    
+    
+      <category term="魔兽" scheme="http://lijiaqi.name/tags/%E9%AD%94%E5%85%BD/"/>
+    
+      <category term="NGA" scheme="http://lijiaqi.name/tags/NGA/"/>
+    
+      <category term="永恒之井" scheme="http://lijiaqi.name/tags/%E6%B0%B8%E6%81%92%E4%B9%8B%E4%BA%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>困惑</title>
+    <link href="http://lijiaqi.name/2014/09/05/2014-09-05-confused/"/>
+    <id>http://lijiaqi.name/2014/09/05/2014-09-05-confused/</id>
+    <published>2014-09-04T16:00:00.000Z</published>
+    <updated>2017-09-20T07:50:37.602Z</updated>
+    
+    <content type="html"><![CDATA[<p>##起因 @ 2014-9-5</p><p>这两天一直被一个乱码问题所困扰,</p><p>起因要做自动化部署,</p><p>于是决定用gradle作为发布工具,主要是因为groovy我也比较熟悉,</p><p>其和maven整合比较紧密,</p><p>但是工程发布以后,</p><p>怎么就表现不正常呢?怎么就出现乱码呢? </p><pre><code>1.首先怀疑工作空间字符集?  检查没问题.1.然后怀疑加载XML的字符集加载不匹配?  检查没问题.1.编译程序没使用指定字符集? 检查没问题.1.容器URL连接字符集问题? 检查没问题.1.请求响应头? 检查没问题.1. response在处理前被打开过? 检查没问题</code></pre><p>到这个时候我已经处在了崩溃的边缘,我该怎么办呢? 使用 eclipse 自动编译的就没问题.<br>相同的工程放置在不同的容器里表现就是不正常.</p><p>突然,我想起来 直接返回字符串试试?结果是中文,那么在本类里定义字串呢?经过测试也没问题,<br>自己写的一个VO对象中文就有问题,又经过一系列痛苦的测试,终于找到了问题,</p><blockquote><p> @XmlType(propOrder = { “…….”})</p></blockquote><p>这个注解导致了问题,但是如何解决????</p><p><del>且看下回分解……</del></p><p>##解决 @ 2014-9-11</p><p>直道今天终于解决了这个问题,</p><p>解决办法虽然很简单,</p><p>但是寻找原因真的太痛苦了.</p><p>只需在启动TOMCAT的时候加入JVM参数</p><blockquote><p>-Dfile.encoding=utf-8 </p></blockquote><p>同时保证JAVA编译强制编码</p><blockquote><p>ecoding=utf-8</p><p>last update @ 2014-09-11 19:01 pm  by jack </p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;##起因 @ 2014-9-5&lt;/p&gt;
+&lt;p&gt;这两天一直被一个乱码问题所困扰,&lt;/p&gt;
+&lt;p&gt;起因要做自动化部署,&lt;/p&gt;
+&lt;p&gt;于是决定用gradle作为发布工具,主要是因为groovy我也比较熟悉,&lt;/p&gt;
+&lt;p&gt;其和maven整合比较紧密,&lt;/p&gt;
+&lt;p&gt;但是工程发布
+      
+    
+    </summary>
+    
+      <category term="技术" scheme="http://lijiaqi.name/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="java" scheme="http://lijiaqi.name/tags/java/"/>
+    
+      <category term="gradle" scheme="http://lijiaqi.name/tags/gradle/"/>
+    
+      <category term="maven" scheme="http://lijiaqi.name/tags/maven/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>魅族MX4发布会</title>
+    <link href="http://lijiaqi.name/2014/09/02/2014-09-02-meizu_mx4_fabuhui/"/>
+    <id>http://lijiaqi.name/2014/09/02/2014-09-02-meizu_mx4_fabuhui/</id>
+    <published>2014-09-01T16:00:00.000Z</published>
+    <updated>2017-09-20T07:50:29.525Z</updated>
+    
+    <content type="html"><![CDATA[<p>一边解决着服务器的问题，</p><p>一边看着今天MX4发布会（<a href="http://live.pconline.com.cn/305.html?qq-pf-to=pcqq.group" target="_blank" rel="external">传送门</a>），</p><p>整体感觉机器样子还是不错的，手感不知道会是咋样。</p><p>反正到目前为止，我觉得手感最好的可能就是四儿子了。</p><p>发布会上依旧调侃风格，</p><p>整体演讲水平，感觉是个人就要比某军强吧。</p><p>不过，魅族的老板确实很低调，没有公开亮相。</p><p>至于手机的硬件本身，我觉得目前，都还能满足日常使用，反正我个人不会用手机跑大型游戏。</p><p>罗胖还是带领起来了一股为第三方应用改图标的热潮，</p><p>不过这件事本身，我还是觉得很诧异，</p><p>但是又说不出来，因为既然成了潮流，自然有支持的声音，与合理的解释。</p><p>整体看宣传片还是不错的FLYME4，据说修改了字体，图标，等等… 好吧，我知道你们的工作量了。</p><p>配合的几个智能硬件，</p><p>智能说跟风，在该品牌上没有提前曝光过，</p><p>不过他们的战略似乎还是很明智的，</p><p>专心做手机，只提供平台和必要的辅助。至于硬件本身，还是专门做硬件的人提供更靠铺一些。</p><blockquote><p>不过，隐约的担心，智能家居，可能离我们越来越远了，</p><p>可能我们买的每款电子产品，都越来越智能了，</p><p>但是，这个大一统的标准有谁来制定？</p><p>这么一大块蛋糕，我相信谁都不原意放弃。</p></blockquote><p>售价确实突破了我的心里预期，</p><p>真的挺便宜的，</p><p>同时也暴露出来，手机行业的区大利润带，</p><p>当然，现在可能已经不大了。</p><p>我不是魅族粉，也不是黑，</p><blockquote><p>整体来说，感觉还是一部值得考虑的手机，并且也有着不错的设计,</p><p>而且，也做着很多和使用者的体验有着直接相关的东西，</p><p>但是，一个厂商就境内有多大精力，把所有环节都做好呢？我看了这次发布会突出的感受就是这个</p><p>发布会，自然是厂商炫耀自己成果地方，报喜不报忧是必然的</p><p>但是，我真的很想知道每个“第一”，“最”的背后，又省略了什么？</p><p>作为一名工程师，我知道我的背后，不光是付出，努力，应该还有妥协，无奈。</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;一边解决着服务器的问题，&lt;/p&gt;
+&lt;p&gt;一边看着今天MX4发布会（&lt;a href=&quot;http://live.pconline.com.cn/305.html?qq-pf-to=pcqq.group&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;传送门&lt;/a
+      
+    
+    </summary>
+    
+      <category term="科技" scheme="http://lijiaqi.name/categories/%E7%A7%91%E6%8A%80/"/>
+    
+    
+      <category term="科技" scheme="http://lijiaqi.name/tags/%E7%A7%91%E6%8A%80/"/>
+    
+      <category term="手机" scheme="http://lijiaqi.name/tags/%E6%89%8B%E6%9C%BA/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>apache整合tomcat</title>
+    <link href="http://lijiaqi.name/2014/09/02/2014-09-02-apache_tomcat_ajp_Chinese_garbled/"/>
+    <id>http://lijiaqi.name/2014/09/02/2014-09-02-apache_tomcat_ajp_Chinese_garbled/</id>
+    <published>2014-09-01T16:00:00.000Z</published>
+    <updated>2017-09-20T06:11:36.908Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近在使用apache整合tomcat,使用ajp连接.</p><p>但是在发布的时候,突然发现问题了.</p><p>然后排查问题,最后发现是某些必要文件找不到,</p><p>那么是中文路径?文件编码?</p><p>最后发现是在URL传递的时候出现了问题.</p><p>##URL传递乱码问题</p><p>通过端口访问TOMCAT的时候一切正常,</p><p>但是通过域名访问就失败了.</p><p>最后发现是JK+AJP传输URL时候出现了中文</p><p>解决方法经过baidu发现都不管用.</p><p>最后找到解决问题的方法:</p><p>1.tomcat端修改<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">"8085"</span> <span class="attr">protocol</span>=<span class="string">"HTTP/1.1"</span> <span class="attr">connectionTimeout</span>=<span class="string">"20000"</span> <span class="attr">redirectPort</span>=<span class="string">"8443"</span></span></div><div class="line"><span class="tag">    <span class="attr">URIEncoding</span>=<span class="string">"UTF8"</span> /&gt;</span></div><div class="line">                 </div><div class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">"8009"</span> <span class="attr">protocol</span>=<span class="string">"AJP/1.3"</span> <span class="attr">redirectPort</span>=<span class="string">"8443"</span></span></div><div class="line"><span class="tag">  <span class="attr">URIEncoding</span>=<span class="string">"UTF8"</span> /&gt;</span></div></pre></td></tr></table></figure></p><p>2.apache端修改</p><blockquote><p> JkOptions  -ForwardDirectories</p></blockquote><p>##关于配置问题</p><p>感觉还是自己编译mod_jk靠铺点,</p><p>在<a href="http://tomcat.apache.org/download-connectors.cgi" target="_blank" rel="external">http://tomcat.apache.org/download-connectors.cgi</a> 这里可以下载到JK的最新原码</p><p>然后native下</p><blockquote><p>./configure –with-apxs=/opt/lampp/bin/apxs </p><p>make</p><p>make install</p></blockquote><p>在apache2/mod_jk.so</p><pre><code>&gt; last update @ 2014-09-03 9:03 am  by jack</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;最近在使用apache整合tomcat,使用ajp连接.&lt;/p&gt;
+&lt;p&gt;但是在发布的时候,突然发现问题了.&lt;/p&gt;
+&lt;p&gt;然后排查问题,最后发现是某些必要文件找不到,&lt;/p&gt;
+&lt;p&gt;那么是中文路径?文件编码?&lt;/p&gt;
+&lt;p&gt;最后发现是在URL传递的时候出现了问题.&lt;/p&gt;
+
+      
+    
+    </summary>
+    
+      <category term="技术" scheme="http://lijiaqi.name/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="java" scheme="http://lijiaqi.name/tags/java/"/>
+    
+      <category term="tomcat" scheme="http://lijiaqi.name/tags/tomcat/"/>
+    
+      <category term="apache" scheme="http://lijiaqi.name/tags/apache/"/>
+    
+      <category term="中文乱码" scheme="http://lijiaqi.name/tags/%E4%B8%AD%E6%96%87%E4%B9%B1%E7%A0%81/"/>
+    
+  </entry>
+  
+</feed>
