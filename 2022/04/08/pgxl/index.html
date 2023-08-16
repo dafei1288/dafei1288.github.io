@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"dafei1288.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="构建一套分布式数据库的实验环境吧。我们使用&#96;docker&#96; 和 &#96;postgres xl&#96; 来完成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="十分钟搭建实验分布式数据库环境">
+<meta property="og:url" content="http://dafei1288.com/2022/04/08/pgxl/index.html">
+<meta property="og:site_name" content="麒思妙想">
+<meta property="og:description" content="构建一套分布式数据库的实验环境吧。我们使用&#96;docker&#96; 和 &#96;postgres xl&#96; 来完成">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrxnywjJgRSDbqUweXaCcaymYuOeX6dGl5dN3JZz1SIUBBBcdQLk3IRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrBUaFGy0t3JdiazV2C1gicURqB4veIW2L3CydmJfKr3xUN434pyxiam91g/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrP8DJu2b2NiaspFYxRavCm0XckZNghDKHeMJXUHlPTuzXyic9qEaN6KUA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27Rr8E4TYh6TrM7UqicIWAlwogDX37dj65DD95f62sojmVJyxI6zU3gkJ9A/640?wx_fmt=png">
+<meta property="article:published_time" content="2022-04-08T06:30:15.000Z">
+<meta property="article:modified_time" content="2023-06-22T09:06:11.857Z">
+<meta property="article:author" content="dafei1288">
+<meta property="article:tag" content="database">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrxnywjJgRSDbqUweXaCcaymYuOeX6dGl5dN3JZz1SIUBBBcdQLk3IRA/640?wx_fmt=png">
+
+
+<link rel="canonical" href="http://dafei1288.com/2022/04/08/pgxl/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://dafei1288.com/2022/04/08/pgxl/","path":"2022/04/08/pgxl/","title":"十分钟搭建实验分布式数据库环境"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>十分钟搭建实验分布式数据库环境 | 麒思妙想</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+  <!-- 页面点击小红心 -->
+  <!-- <script type="text/javascript" src="/js/src/clicklove.js"></script> -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">麒思妙想</p>
+      <i class="logo-line"></i>
+    </a>
+    <p class="site-subtitle" itemprop="description">分布式, AI+BI, 数据库, 架构</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-books"><a href="/books/" rel="section"><i class="fa fa-calendar fa-fw"></i>books</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%81%E5%88%86%E9%92%9F%E6%90%AD%E5%BB%BA%E5%AE%9E%E9%AA%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">十分钟搭建实验分布式数据库环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Postgres-XL-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Postgres XL 简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFPostgres-XL"><span class="nav-number">1.1.1.</span> <span class="nav-text">什么是Postgres-XL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PostgreSQL%E4%B8%8EPostgres-XL"><span class="nav-number">1.1.2.</span> <span class="nav-text">PostgreSQL与Postgres-XL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Postgres-XC%E4%B8%8EPostgres-XL"><span class="nav-number">1.1.3.</span> <span class="nav-text">Postgres-XC与Postgres-XL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.4.</span> <span class="nav-text">架构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Postgres-XL-on-Docker"><span class="nav-number">1.2.</span> <span class="nav-text">Postgres XL on Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#docker-compose-yml"><span class="nav-number">1.2.1.</span> <span class="nav-text">docker-compose.yml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pgpool-conf"><span class="nav-number">1.2.2.</span> <span class="nav-text">pgpool.conf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">1.2.3.</span> <span class="nav-text">实验结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E5%88%97%E8%A1%A8"><span class="nav-number">1.3.</span> <span class="nav-text">参考列表</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dafei1288"
+      src="/images/SouthParkJAG-small.png">
+  <p class="site-author-name" itemprop="name">dafei1288</p>
+  <div class="site-description" itemprop="description">description</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/dafei1288" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/dafei1288" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fa fa-globe fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          Links
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://tensorstream.cn/" title="http:&#x2F;&#x2F;tensorstream.cn" rel="noopener" target="_blank">麒思妙想</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://dafei1288.com/2022/04/08/pgxl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/SouthParkJAG-small.png">
+      <meta itemprop="name" content="dafei1288">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="麒思妙想">
+      <meta itemprop="description" content="description">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="十分钟搭建实验分布式数据库环境 | 麒思妙想">
+      <meta itemprop="description" content="构建一套分布式数据库的实验环境吧。我们使用`docker` 和 `postgres xl` 来完成">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          十分钟搭建实验分布式数据库环境
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-04-08 14:30:15" itemprop="dateCreated datePublished" datetime="2022-04-08T14:30:15+08:00">2022-04-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-06-22 17:06:11" itemprop="dateModified" datetime="2023-06-22T17:06:11+08:00">2023-06-22</time>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2022/04/08/pgxl/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2022/04/08/pgxl/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+</div>
+
+            <div class="post-description">构建一套分布式数据库的实验环境吧。我们使用`docker` 和 `postgres xl` 来完成</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="十分钟搭建实验分布式数据库环境"><a href="#十分钟搭建实验分布式数据库环境" class="headerlink" title="十分钟搭建实验分布式数据库环境"></a>十分钟搭建实验分布式数据库环境</h1><p>划水了好久，今天来跟大家分享一下如何用一台笔记本，构建一套分布式数据库的实验环境吧。我们使用<code>docker</code> 和 <code>postgres xl</code> 来完成。各位读者老爷们扣Q上车，Let’s Go!!!!</p>
+<h2 id="Postgres-XL-简介"><a href="#Postgres-XL-简介" class="headerlink" title="Postgres XL 简介"></a>Postgres XL 简介</h2><h3 id="什么是Postgres-XL"><a href="#什么是Postgres-XL" class="headerlink" title="什么是Postgres-XL"></a>什么是Postgres-XL</h3><p>XL的意思是：eXtensible Lattice，可以扩展的格子，即将PostgreSQL应用在多机器上的分布式数据库的形象化表达。Postgres-XL 是一个完全满足ACID的、开源的、可方便进行水平扩展的、多租户安全的、基于PostgreSQL的数据库解决方案。Postgres-XL 可非常灵活的应付各种负载，比如：</p>
+<ul>
+<li>OLAP（通过MPP并行化）</li>
+<li>OLTP</li>
+<li>OLAP &amp; OLTP</li>
+<li>操作数据存储</li>
+<li>Key-value存储，包括JSON格式</li>
+</ul>
+<p>不同的应用场景：</p>
+<ul>
+<li>支持商业智能应用（数据仓库&amp;数据集市），因为PGXL支持MPP(Massively Parallel Processing)</li>
+<li>Web2.0，数据库扩容的解决方案</li>
+<li>遗留系统的数据库扩容的解决方案</li>
+<li>新应用，可以先使用PostgreSQL，之后随着数据库变大使用PGXL扩容</li>
+</ul>
+<p>PGXL底层为PostgreSQL，这意味着它支持所有支持PostgresSQL类型的驱动，包括：JDBC, ODBC, OLE DB, Python, Ruby, perl DBI, Tcl, and Erlang.</p>
+<h3 id="PostgreSQL与Postgres-XL"><a href="#PostgreSQL与Postgres-XL" class="headerlink" title="PostgreSQL与Postgres-XL"></a>PostgreSQL与Postgres-XL</h3><ul>
+<li>1994年，Postgre95发布，开源。</li>
+<li>1996年，PostgreSQL继承了Postgre95，发布。</li>
+<li>2010年，Postgres-XC发布。</li>
+<li>2012年，前PGXC核心开发者创建StormDB公司，进行了一些改进，包括对MPP并行化的性能改进和多租户安全。</li>
+<li>2013年，TransLattice收购了StormDB。</li>
+<li>2014年，将项目开源，命名为Postgres-XL。</li>
+</ul>
+<h3 id="Postgres-XC与Postgres-XL"><a href="#Postgres-XC与Postgres-XL" class="headerlink" title="Postgres-XC与Postgres-XL"></a>Postgres-XC与Postgres-XL</h3><p>PGXL的架构师和开发者 很多都是以前做PGXC的，PGXL的部分代码是从PGXC移植过来的。比起功能性，PGXL更强调稳定性, 正确性和性能.PGXL增加了一些重要的性能提升，比如MPP和replan avoidance on the data nodes，这些都是PGXC没有的。PGXC目前集中在OLTP的业务上面，PGXL则更加灵活，可以应用于很多不同种类的业务上，比如可以用在大数据处理领域，除此，在多租户的环境中，PGXL也更加安全。PGXL的社区非常开放。</p>
+<h3 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h3><p>GXL有三个主要组件，分别是GTM，Coordinator(CN)和Datanode(DN)。<img src="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrxnywjJgRSDbqUweXaCcaymYuOeX6dGl5dN3JZz1SIUBBBcdQLk3IRA/640?wx_fmt=png">GTM(Gloable Transaction Manager)负责提供事务的ACID属性；Datanode负责存储表的数据和本地执行由Coordinator派发的SQL任务；Coordinator负责处理每个来自Application的SQL任务，并且决定由哪个Datanode执行，然后将任务计划派发给相应的Datanode，根据需要收集结果返还给Application；  </p>
+<h2 id="Postgres-XL-on-Docker"><a href="#Postgres-XL-on-Docker" class="headerlink" title="Postgres XL on Docker"></a>Postgres XL on Docker</h2><p>我们采用一个GTM，2台CN，2台DN，结构如下图所示：<img src="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrBUaFGy0t3JdiazV2C1gicURqB4veIW2L3CydmJfKr3xUN434pyxiam91g/640?wx_fmt=png"></p>
+<h3 id="docker-compose-yml"><a href="#docker-compose-yml" class="headerlink" title="docker-compose.yml"></a>docker-compose.yml</h3><p>配置文件如下所示，执行 <code>docker-compose up</code>，启动集群</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br></pre></td><td class="code"><pre><span class="line">version: &quot;3&quot;  </span><br><span class="line">services:  </span><br><span class="line">  db_gtm_1:  </span><br><span class="line">    environment:  </span><br><span class="line">      - PG_HOST=0.0.0.0  </span><br><span class="line">      - PG_NODE=gtm_1  </span><br><span class="line">      - PG_PORT=6666  </span><br><span class="line">#      - PG_PASSWORD=dafei1288  </span><br><span class="line">    build: .  </span><br><span class="line">#    image: z_db_gtm_1  </span><br><span class="line">    command: docker-cmd-gtm  </span><br><span class="line">    entrypoint: docker-entrypoint-gtm  </span><br><span class="line">    volumes:  </span><br><span class="line">      - db_gtm_1:/var/lib/postgresql  </span><br><span class="line">    networks:  </span><br><span class="line">      - db_a  </span><br><span class="line">    healthcheck:  </span><br><span class="line">      test: [&quot;CMD&quot;, &quot;docker-healthcheck-gtm&quot;]  </span><br><span class="line">  db_coord_1:  </span><br><span class="line">    ports:  </span><br><span class="line">      - &quot;25432:5432&quot;  </span><br><span class="line">    environment:  </span><br><span class="line">      - PG_GTM_HOST=db_gtm_1  </span><br><span class="line">      - PG_GTM_PORT=6666  </span><br><span class="line">      - PG_HOST=0.0.0.0  </span><br><span class="line">      - PG_NODE=coord_1  </span><br><span class="line">      - PG_PORT=5432  </span><br><span class="line">#      - PG_PASSWORD=dafei1288  </span><br><span class="line">    build: .  </span><br><span class="line">#    privileged: true  </span><br><span class="line">#    image: z_db_coord_1  </span><br><span class="line">    command: docker-cmd-coord  </span><br><span class="line">    entrypoint: docker-entrypoint-coord  </span><br><span class="line">    volumes:  </span><br><span class="line">      - db_coord_1:/var/lib/postgresql  </span><br><span class="line">    depends_on:  </span><br><span class="line">      - db_gtm_1  </span><br><span class="line">    networks:  </span><br><span class="line">      - db_a  </span><br><span class="line">      - db_b  </span><br><span class="line">    healthcheck:  </span><br><span class="line">      test: [&quot;CMD&quot;, &quot;docker-healthcheck-coord&quot;]  </span><br><span class="line">  db_coord_2:  </span><br><span class="line">    ports:  </span><br><span class="line">      - &quot;25433:5432&quot;  </span><br><span class="line">    environment:  </span><br><span class="line">      - PG_GTM_HOST=db_gtm_1  </span><br><span class="line">      - PG_GTM_PORT=6666  </span><br><span class="line">      - PG_HOST=0.0.0.0  </span><br><span class="line">      - PG_NODE=coord_2  </span><br><span class="line">      - PG_PORT=5432  </span><br><span class="line">#      - PG_PASSWORD=dafei1288  </span><br><span class="line">    build: .  </span><br><span class="line">#    privileged: true  </span><br><span class="line">#    image: z_db_coord_2  </span><br><span class="line">    command: docker-cmd-coord  </span><br><span class="line">    entrypoint: docker-entrypoint-coord  </span><br><span class="line">    volumes:  </span><br><span class="line">      - db_coord_2:/var/lib/postgresql  </span><br><span class="line">    depends_on:  </span><br><span class="line">      - db_gtm_1  </span><br><span class="line">    networks:  </span><br><span class="line">      - db_a  </span><br><span class="line">      - db_b  </span><br><span class="line">    healthcheck:  </span><br><span class="line">      test: [&quot;CMD&quot;, &quot;docker-healthcheck-coord&quot;]  </span><br><span class="line">  db_data_1:  </span><br><span class="line">    ports:  </span><br><span class="line">      - &quot;25434:5432&quot;  </span><br><span class="line">    environment:  </span><br><span class="line">      - PG_GTM_HOST=db_gtm_1  </span><br><span class="line">      - PG_GTM_PORT=6666  </span><br><span class="line">      - PG_HOST=0.0.0.0  </span><br><span class="line">      - PG_NODE=data_1  </span><br><span class="line">      - PG_PORT=5432  </span><br><span class="line">#      - PG_PASSWORD=dafei1288  </span><br><span class="line">    build: .  </span><br><span class="line">#    image: z_db_data_1  </span><br><span class="line">    command: docker-cmd-data  </span><br><span class="line">    entrypoint: docker-entrypoint-data  </span><br><span class="line">    depends_on:  </span><br><span class="line">      - db_gtm_1  </span><br><span class="line">    volumes:  </span><br><span class="line">      - db_data_1:/var/lib/postgresql  </span><br><span class="line">    networks:  </span><br><span class="line">      - db_a  </span><br><span class="line">    healthcheck:  </span><br><span class="line">      test: [&quot;CMD&quot;, &quot;docker-healthcheck-data&quot;]  </span><br><span class="line">  db_data_2:  </span><br><span class="line">    ports:  </span><br><span class="line">      - &quot;25435:5432&quot;  </span><br><span class="line">    environment:  </span><br><span class="line">      - PG_GTM_HOST=db_gtm_1  </span><br><span class="line">      - PG_GTM_PORT=6666  </span><br><span class="line">      - PG_HOST=0.0.0.0  </span><br><span class="line">      - PG_NODE=data_2  </span><br><span class="line">      - PG_PORT=5432  </span><br><span class="line">#      - PG_PASSWORD=dafei1288  </span><br><span class="line">    build: .  </span><br><span class="line">#    image: z_db_data_2  </span><br><span class="line">    command: docker-cmd-data  </span><br><span class="line">    entrypoint: docker-entrypoint-data  </span><br><span class="line">    depends_on:  </span><br><span class="line">      - db_gtm_1  </span><br><span class="line">    volumes:  </span><br><span class="line">      - db_data_2:/var/lib/postgresql  </span><br><span class="line">    networks:  </span><br><span class="line">      - db_a  </span><br><span class="line">    healthcheck:  </span><br><span class="line">      test: [&quot;CMD&quot;, &quot;docker-healthcheck-data&quot;]  </span><br><span class="line">  pgpool:  </span><br><span class="line">#    image: smirart/pgpool:latest  </span><br><span class="line">    image: postdock/pgpool:latest  </span><br><span class="line">    ports:  </span><br><span class="line">      - &quot;8686:8686&quot;  </span><br><span class="line">      - &quot;8687:5432&quot;  </span><br><span class="line">      - &quot;8688:9898&quot;  </span><br><span class="line">#    environment:  </span><br><span class="line">#      - PG_PASSWORD=dafei1288  </span><br><span class="line">    volumes:  </span><br><span class="line">      - ./pgpool.conf:/var/pgpool_configs/pgpool.conf  </span><br><span class="line">    restart: always  </span><br><span class="line">    networks:  </span><br><span class="line">      - db_b  </span><br><span class="line">volumes:  </span><br><span class="line">  db_gtm_1: &#123;&#125;  </span><br><span class="line">  db_coord_1: &#123;&#125;  </span><br><span class="line">  db_coord_2: &#123;&#125;  </span><br><span class="line">  db_data_1: &#123;&#125;  </span><br><span class="line">  db_data_2: &#123;&#125;  </span><br><span class="line">networks:  </span><br><span class="line">  db_a:  </span><br><span class="line">    internal: true  </span><br><span class="line">  db_b:  </span><br><span class="line">    internal: true  </span><br><span class="line">  </span><br></pre></td></tr></table></figure>
+
+<p>如果有需要，可以开启gppool，也可以注释掉，不影响使用</p>
+<h3 id="pgpool-conf"><a href="#pgpool-conf" class="headerlink" title="pgpool.conf"></a>pgpool.conf</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">listen_addresses = &#x27;*&#x27;  </span><br><span class="line">port = 5432  </span><br><span class="line"># pool_passwd = &#x27;dafei1288&#x27;  </span><br><span class="line">socket_dir = &#x27;/tmp&#x27;  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">pcp_listen_addresses = &#x27;*&#x27;  </span><br><span class="line">pcp_port = 9898  </span><br><span class="line">pcp_socket_dir = &#x27;/tmp&#x27;  </span><br><span class="line">listen_backlog_multiplier = 2  </span><br><span class="line">serialize_accept = off  </span><br><span class="line">  </span><br><span class="line">replication_mode = on  </span><br><span class="line">load_balance_mode = on  </span><br><span class="line">  </span><br><span class="line">backend_hostname0 = &#x27;db_coord_1&#x27;  </span><br><span class="line">backend_port0 = 5432  </span><br><span class="line">backend_weight0 = 1  </span><br><span class="line">backend_data_directory0 = &#x27;/data0&#x27;  </span><br><span class="line">backend_flag0 = &#x27;ALWAYS_MASTER&#x27;  </span><br><span class="line">  </span><br><span class="line">backend_hostname1 = &#x27;db_coord_2&#x27;  </span><br><span class="line">backend_port1 = 5432  </span><br><span class="line">backend_weight1 = 1  </span><br><span class="line">backend_data_directory1 = &#x27;/data1&#x27;  </span><br><span class="line">backend_flag1 = &#x27;ALLOW_TO_FAILOVER&#x27;  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">health_check_period0 = 0  </span><br><span class="line">health_check_timeout0 = 20  </span><br><span class="line">health_check_user0 = &#x27;_healthcheck&#x27;  </span><br><span class="line">health_check_password0 = &#x27;&#x27;  </span><br><span class="line">health_check_database0 = &#x27;&#x27;  </span><br><span class="line">health_check_max_retries0 = 0  </span><br><span class="line">health_check_retry_delay0 = 1  </span><br><span class="line">connect_timeout0 = 10000  </span><br></pre></td></tr></table></figure>
+
+<h3 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h3><p><img src="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27RrP8DJu2b2NiaspFYxRavCm0XckZNghDKHeMJXUHlPTuzXyic9qEaN6KUA/640?wx_fmt=png"><br><img src="https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAagicZ7J30lHguUx0YZGNE27Rr8E4TYh6TrM7UqicIWAlwogDX37dj65DD95f62sojmVJyxI6zU3gkJ9A/640?wx_fmt=png"><br>本实验工程 fork自 <code>https://github.com/tiredpixel/z.2020-10-22.postgres-xl-docker</code>,由于原镜像已设置为只读，并且执行会出一些奇奇怪怪的错误，于是我就整理了一番，项目已托管到全球最大同仁网站gayhub，网址如下:  </p>
+<p><code>https://github.com/dafei1288/postgres-xl-docker</code></p>
+<h2 id="参考列表"><a href="#参考列表" class="headerlink" title="参考列表"></a>参考列表</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yeruby/article/details/49004329">https://blog.csdn.net/yeruby/article/details/49004329</a><br><a target="_blank" rel="noopener" href="https://github.com/tiredpixel/z.2020-10-22.postgres-xl-docker">https://github.com/tiredpixel/z.2020-10-22.postgres-xl-docker</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/database/" rel="tag"># database</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/10/02/16_porblem_of_ubuntu_apt_update/" rel="prev" title="解决ubuntu apt update时出错的问题">
+                  <i class="fa fa-chevron-left"></i> 解决ubuntu apt update时出错的问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/06/22/1001_calcite-sql-parser-demo/" rel="next" title="手把手教你使用calcite解析SQL">
+                  手把手教你使用calcite解析SQL <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">津ICP备 15004116号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2014 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dafei1288</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>违法和不良信息举报电话: 022-26562406 | 举报邮箱 : jianfeiya2023@163.com | 网站举报入口: www.qinglangtianjin.com
+
+    </div>
+  </footer>
+
+  
+  <script type="text/javascript" src="/js/third-party/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"jacky128899","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

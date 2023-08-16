@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"dafei1288.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="大家好，这是Calcite的第二篇文章了，我一直毫不掩饰对calcite的喜爱，而且一直在致力于为社区做一些贡献，如果你也喜欢这个项目的话，欢迎评论，转发，如果没看过第一篇的话，也欢迎移步去看看（手把手教你使用Calcite查看SQL执行计划）。 今天我要分享的主题是关于 Calcite 关系代数 以及 SQL 的那些事，Let’s go !!!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何使用calcite构建SQL并执行查询">
+<meta property="og:url" content="http://dafei1288.com/2023/07/01/1002_calcite-sql-creator/index.html">
+<meta property="og:site_name" content="麒思妙想">
+<meta property="og:description" content="大家好，这是Calcite的第二篇文章了，我一直毫不掩饰对calcite的喜爱，而且一直在致力于为社区做一些贡献，如果你也喜欢这个项目的话，欢迎评论，转发，如果没看过第一篇的话，也欢迎移步去看看（手把手教你使用Calcite查看SQL执行计划）。 今天我要分享的主题是关于 Calcite 关系代数 以及 SQL 的那些事，Let’s go !!!">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-07-01T06:19:50.000Z">
+<meta property="article:modified_time" content="2023-07-01T09:14:57.164Z">
+<meta property="article:author" content="dafei1288">
+<meta property="article:tag" content="database">
+<meta property="article:tag" content="calcite">
+<meta property="article:tag" content="编译原理">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://dafei1288.com/2023/07/01/1002_calcite-sql-creator/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://dafei1288.com/2023/07/01/1002_calcite-sql-creator/","path":"2023/07/01/1002_calcite-sql-creator/","title":"如何使用calcite构建SQL并执行查询"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>如何使用calcite构建SQL并执行查询 | 麒思妙想</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+  <!-- 页面点击小红心 -->
+  <!-- <script type="text/javascript" src="/js/src/clicklove.js"></script> -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">麒思妙想</p>
+      <i class="logo-line"></i>
+    </a>
+    <p class="site-subtitle" itemprop="description">分布式, AI+BI, 数据库, 架构</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-books"><a href="/books/" rel="section"><i class="fa fa-calendar fa-fw"></i>books</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E7%B3%BB%E4%BB%A3%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">关系代数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E6%95%B0%E6%9E%84%E5%BB%BA%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">代数构建器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%AB%E6%8F%8F%E8%A1%A8"><span class="nav-number">1.2.</span> <span class="nav-text">扫描表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%8A%95%E5%BD%B1"><span class="nav-number">1.3.</span> <span class="nav-text">添加投影</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%BF%87%E6%BB%A4%E8%81%9A%E5%90%88"><span class="nav-number">1.4.</span> <span class="nav-text">添加过滤聚合</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B-CalciteRelBuilderCase-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">实例 CalciteRelBuilderCase 完整代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">3.</span> <span class="nav-text">执行结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%BF%9E%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考连接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dafei1288"
+      src="/images/SouthParkJAG-small.png">
+  <p class="site-author-name" itemprop="name">dafei1288</p>
+  <div class="site-description" itemprop="description">description</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/dafei1288" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/dafei1288" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fa fa-globe fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          Links
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://tensorstream.cn/" title="http:&#x2F;&#x2F;tensorstream.cn" rel="noopener" target="_blank">麒思妙想</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://dafei1288.com/2023/07/01/1002_calcite-sql-creator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/SouthParkJAG-small.png">
+      <meta itemprop="name" content="dafei1288">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="麒思妙想">
+      <meta itemprop="description" content="description">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="如何使用calcite构建SQL并执行查询 | 麒思妙想">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何使用calcite构建SQL并执行查询
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-07-01 14:19:50 / Modified: 17:14:57" itemprop="dateCreated datePublished" datetime="2023-07-01T14:19:50+08:00">2023-07-01</time>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2023/07/01/1002_calcite-sql-creator/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/07/01/1002_calcite-sql-creator/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>大家好，这是Calcite的第二篇文章了，我一直毫不掩饰对calcite的喜爱，而且一直在致力于为社区做一些贡献，如果你也喜欢这个项目的话，欢迎评论，转发，如果没看过第一篇的话，也欢迎移步去看看（手把手教你使用Calcite查看SQL执行计划）。</p>
+<p>今天我要分享的主题是关于 Calcite 关系代数 以及 SQL 的那些事，Let’s go !!!</p>
+<span id="more"></span>
+
+<h2 id="关系代数"><a href="#关系代数" class="headerlink" title="关系代数"></a>关系代数</h2><p>首先关系代数是 Calcite 的核心。每个查询都可以表示为一个 关系运算符树。你可以将 SQL 转换为关系代数，也可以直接构建关系运算符树。</p>
+<p>优化器规则使用保持 相同语义 的 数学恒等式 来变换表达式树。例如，如果过滤器没有引用其他输入中的列，那么将过滤器推入到内部关联的输入则是有效的。</p>
+<p>Calcite 通过反复地将优化器规则应用于关系表达式来优化查询。成本模型指导该过程，优化器引擎生成与原始语义相同，但成本较低的替代表达式。</p>
+<p>优化过程是可扩展的。你可以添加自己的 关系运算符、优化器规则、成本模型 和 统计信息。</p>
+<h3 id="代数构建器"><a href="#代数构建器" class="headerlink" title="代数构建器"></a>代数构建器</h3><p>构建关系表达式的最简单方法是使用代数构建器 RelBuilder。下面是一个例子：</p>
+<h3 id="扫描表"><a href="#扫描表" class="headerlink" title="扫描表"></a>扫描表</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FrameworkConfig config;</span><br><span class="line"><span class="type">RelBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> RelBuilder.create(config);</span><br><span class="line"><span class="type">RelNode</span> <span class="variable">cnode</span> <span class="operator">=</span> relBuilder.scan(<span class="string">&quot;consumers&quot;</span>).build();</span><br><span class="line">System.out.println(<span class="string">&quot;==&gt; &quot;</span>+RelOptUtil.toString(cnode));</span><br></pre></td></tr></table></figure>
+<p>其执行结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">==&gt; LogicalTableScan(table=[[consumers]])</span><br></pre></td></tr></table></figure>
+<p>等价与SQL</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> consumers ;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="添加投影"><a href="#添加投影" class="headerlink" title="添加投影"></a>添加投影</h3><p>现在，让我们添加一个投影，相当于如下 SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> firstname,lastname <span class="keyword">FROM</span> consumers ;</span><br></pre></td></tr></table></figure>
+
+<p>我们只需要在调用 build 方法前，添加一个 project 方法调用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cnode = relBuilder.scan(<span class="string">&quot;consumers&quot;</span>).project(relBuilder.field(<span class="string">&quot;firstname&quot;</span>),</span><br><span class="line">        relBuilder.field(<span class="string">&quot;lastname&quot;</span>)).build();</span><br><span class="line">System.out.println(<span class="string">&quot;==&gt; &quot;</span>+RelOptUtil.toString(cnode));</span><br></pre></td></tr></table></figure>
+<p>其执行结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">==&gt; LogicalProject(firstname=[$1], lastname=[$2])</span><br><span class="line">  LogicalTableScan(table=[[consumers]])</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加过滤聚合"><a href="#添加过滤聚合" class="headerlink" title="添加过滤聚合"></a>添加过滤聚合</h3><p>下面是一个包含聚合和过滤的查询语句：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">cnode = relBuilder.scan(<span class="string">&quot;orders&quot;</span>)</span><br><span class="line">            .aggregate(</span><br><span class="line">                    relBuilder.groupKey(<span class="string">&quot;goods&quot;</span>),</span><br><span class="line">                    relBuilder.count(<span class="literal">false</span>, <span class="string">&quot;c&quot;</span>),</span><br><span class="line">                    relBuilder.sum(<span class="literal">false</span>, <span class="string">&quot;p&quot;</span>, relBuilder.field(<span class="string">&quot;price&quot;</span>)))</span><br><span class="line">            .filter(</span><br><span class="line">                    relBuilder.call(</span><br><span class="line">                        SqlStdOperatorTable.GREATER_THAN,</span><br><span class="line">                                relBuilder.field(<span class="string">&quot;c&quot;</span>),</span><br><span class="line">                                relBuilder.literal(<span class="number">1</span>))</span><br><span class="line">                    ).build();</span><br><span class="line"></span><br><span class="line">System.out.println(RelOptUtil.toString(cnode));</span><br></pre></td></tr></table></figure>
+<p>相当于如下 SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> goods, <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count, <span class="built_in">sum</span>(price) <span class="keyword">AS</span> p <span class="keyword">FROM</span> orders <span class="keyword">GROUP</span> <span class="keyword">BY</span> goods <span class="keyword">HAVING</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="operator">&gt;</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>其执行结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LogicalFilter(condition=[&gt;($1, 1)])</span><br><span class="line">  LogicalAggregate(group=[&#123;1&#125;], c=[COUNT()], p=[SUM($2)])</span><br><span class="line">    LogicalTableScan(table=[[orders]])</span><br></pre></td></tr></table></figure>
+
+<p>好了，接下来我们来看进一步的实例。</p>
+<h2 id="实例-CalciteRelBuilderCase-完整代码"><a href="#实例-CalciteRelBuilderCase-完整代码" class="headerlink" title="实例 CalciteRelBuilderCase 完整代码"></a>实例 CalciteRelBuilderCase 完整代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.dafei1288;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.adapter.csv.CsvSchema;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.adapter.csv.CsvTable;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.RelOptUtil;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.RelNode;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.core.JoinRelType;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.schema.SchemaPlus;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.sql.fun.SqlStdOperatorTable;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.sql.parser.SqlParser;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.FrameworkConfig;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.Frameworks;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.RelBuilder;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.RelRunners;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.File;</span><br><span class="line"><span class="keyword">import</span> java.sql.PreparedStatement;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSet;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSetMetaData;</span><br><span class="line"><span class="keyword">import</span> java.sql.SQLException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CalciteRelBuilderCase</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">SchemaPlus</span> <span class="variable">rootSchema</span> <span class="operator">=</span> Frameworks.createRootSchema(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">csvPath</span> <span class="operator">=</span> <span class="string">&quot;D:\\study\\codespace\\testcalcite\\src\\main\\resources\\db&quot;</span>;</span><br><span class="line">        <span class="type">CsvSchema</span> <span class="variable">csvSchema</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CsvSchema</span>(<span class="keyword">new</span> <span class="title class_">File</span>(csvPath), CsvTable.Flavor.SCANNABLE);</span><br><span class="line">        rootSchema.add(<span class="string">&quot;consumers&quot;</span>, csvSchema.getTable(<span class="string">&quot;consumers&quot;</span>));</span><br><span class="line">        rootSchema.add(<span class="string">&quot;orders&quot;</span>, csvSchema.getTable(<span class="string">&quot;orders&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="type">FrameworkConfig</span> <span class="variable">frameworkConfig</span> <span class="operator">=</span> Frameworks.newConfigBuilder()</span><br><span class="line">                .parserConfig(SqlParser.Config.DEFAULT)</span><br><span class="line">                .defaultSchema(rootSchema)</span><br><span class="line">                .build();</span><br><span class="line"></span><br><span class="line">        <span class="type">RelBuilder</span> <span class="variable">relBuilder</span> <span class="operator">=</span> RelBuilder.create(frameworkConfig);</span><br><span class="line"><span class="comment">//        id,goods,price,amount,user_id               orders</span></span><br><span class="line"><span class="comment">//        id,firstname,lastname,birth                 consumers</span></span><br><span class="line">        <span class="type">RelNode</span> <span class="variable">node</span> <span class="operator">=</span> relBuilder</span><br><span class="line">                .scan(<span class="string">&quot;consumers&quot;</span>)</span><br><span class="line">                .scan(<span class="string">&quot;orders&quot;</span>)</span><br><span class="line">                .join(JoinRelType.INNER,</span><br><span class="line">                        relBuilder.call(SqlStdOperatorTable.EQUALS,</span><br><span class="line">                                relBuilder.field(<span class="string">&quot;id&quot;</span>),</span><br><span class="line">                                relBuilder.field(<span class="string">&quot;user_id&quot;</span>)))</span><br><span class="line">                .filter(</span><br><span class="line">                        relBuilder.call(SqlStdOperatorTable.EQUALS,</span><br><span class="line">                                relBuilder.field(<span class="string">&quot;lastname&quot;</span>),</span><br><span class="line">                                relBuilder.literal(<span class="string">&quot;jacky&quot;</span>)))</span><br><span class="line">                .project(</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;id&quot;</span>),</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;goods&quot;</span>),</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;price&quot;</span>),</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;firstname&quot;</span>),</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;lastname&quot;</span>))</span><br><span class="line">                .sortLimit(<span class="number">0</span>, <span class="number">5</span>, relBuilder.field(<span class="string">&quot;id&quot;</span>))</span><br><span class="line">                .build();</span><br><span class="line"></span><br><span class="line">        System.out.println(RelOptUtil.toString(node));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;[result:]&quot;</span>);</span><br><span class="line">        <span class="type">PreparedStatement</span> <span class="variable">run</span> <span class="operator">=</span> RelRunners.run(node);</span><br><span class="line">        <span class="type">ResultSet</span> <span class="variable">resultSet</span> <span class="operator">=</span> run.executeQuery();</span><br><span class="line"></span><br><span class="line">        <span class="type">ResultSetMetaData</span> <span class="variable">resultSetMetaData</span> <span class="operator">=</span> resultSet.getMetaData();</span><br><span class="line">        <span class="type">int</span> <span class="variable">colCount</span> <span class="operator">=</span> resultSetMetaData.getColumnCount();</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= colCount ; i++)&#123;</span><br><span class="line">            System.out.print(resultSetMetaData.getColumnName(i)+<span class="string">&quot;\t&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(resultSet.next())&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= colCount ; i++)&#123;</span><br><span class="line">                System.out.print(resultSet.getString(i)+<span class="string">&quot;\t&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="执行结果"><a href="#执行结果" class="headerlink" title="执行结果"></a>执行结果</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">LogicalSort(sort0=[$0], dir0=[ASC], fetch=[5])</span><br><span class="line">  LogicalProject(id=[$0], goods=[$5], price=[$6], firstname=[$1], lastname=[$2])</span><br><span class="line">    LogicalFilter(condition=[=($2, &#x27;jacky&#x27;)])</span><br><span class="line">      LogicalJoin(condition=[=($0, $4)], joinType=[inner])</span><br><span class="line">        LogicalTableScan(table=[[consumers]])</span><br><span class="line">        LogicalTableScan(table=[[orders]])</span><br><span class="line"></span><br><span class="line">[result:]</span><br><span class="line">id	goods	price	firstname	lastname	</span><br><span class="line">1	book	100	li	jacky	</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>好了，今天的分享就到这里，下次我们来看看如果进行SQL改写。</p>
+<h2 id="参考连接"><a href="#参考连接" class="headerlink" title="参考连接"></a>参考连接</h2><p><a target="_blank" rel="noopener" href="https://calcite.apache.org/docs/algebra.html">https://calcite.apache.org/docs/algebra.html</a><br><a target="_blank" rel="noopener" href="https://strongduanmu.com/wiki/calcite/algebra.html">https://strongduanmu.com/wiki/calcite/algebra.html</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/623062311">https://zhuanlan.zhihu.com/p/623062311</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/skyyws/article/details/124828049">https://blog.csdn.net/skyyws/article/details/124828049</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/database/" rel="tag"># database</a>
+              <a href="/tags/calcite/" rel="tag"># calcite</a>
+              <a href="/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/" rel="tag"># 编译原理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/06/22/1001_calcite-sql-parser-demo/" rel="prev" title="手把手教你使用calcite解析SQL">
+                  <i class="fa fa-chevron-left"></i> 手把手教你使用calcite解析SQL
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/08/10/1003-calcite-sql-rule/" rel="next" title="如何使用calcite rule做SQL重写（上）">
+                  如何使用calcite rule做SQL重写（上） <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">津ICP备 15004116号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2014 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dafei1288</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>违法和不良信息举报电话: 022-26562406 | 举报邮箱 : jianfeiya2023@163.com | 网站举报入口: www.qinglangtianjin.com
+
+    </div>
+  </footer>
+
+  
+  <script type="text/javascript" src="/js/third-party/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"jacky128899","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

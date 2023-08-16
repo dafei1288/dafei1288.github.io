@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"dafei1288.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="大家好，我又腆着大脸来更新了，也是知道自己鸽了很久很久，也就不找说辞了，尽管确实是有点遭不住996了。还是恭祝大家端午安康吧。对于最近越发火爆的calcite,作为一个18年就开始翻译官方文档的作者来说，真是很欣慰，大家都用他来干什么呢？很多同学都是想用他来重写SQL，或者做优化。反正无论如何，还是需要对他有一定的了解，今天我来和大家分享一下，如何从代码端来解析SQL。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手把手教你使用calcite解析SQL">
+<meta property="og:url" content="http://dafei1288.com/2023/06/22/1001_calcite-sql-parser-demo/index.html">
+<meta property="og:site_name" content="麒思妙想">
+<meta property="og:description" content="大家好，我又腆着大脸来更新了，也是知道自己鸽了很久很久，也就不找说辞了，尽管确实是有点遭不住996了。还是恭祝大家端午安康吧。对于最近越发火爆的calcite,作为一个18年就开始翻译官方文档的作者来说，真是很欣慰，大家都用他来干什么呢？很多同学都是想用他来重写SQL，或者做优化。反正无论如何，还是需要对他有一定的了解，今天我来和大家分享一下，如何从代码端来解析SQL。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-06-22T09:12:17.000Z">
+<meta property="article:modified_time" content="2023-07-01T09:18:04.232Z">
+<meta property="article:author" content="dafei1288">
+<meta property="article:tag" content="database">
+<meta property="article:tag" content="calcite">
+<meta property="article:tag" content="编译原理">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://dafei1288.com/2023/06/22/1001_calcite-sql-parser-demo/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://dafei1288.com/2023/06/22/1001_calcite-sql-parser-demo/","path":"2023/06/22/1001_calcite-sql-parser-demo/","title":"手把手教你使用calcite解析SQL"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>手把手教你使用calcite解析SQL | 麒思妙想</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+  <!-- 页面点击小红心 -->
+  <!-- <script type="text/javascript" src="/js/src/clicklove.js"></script> -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">麒思妙想</p>
+      <i class="logo-line"></i>
+    </a>
+    <p class="site-subtitle" itemprop="description">分布式, AI+BI, 数据库, 架构</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-books"><a href="/books/" rel="section"><i class="fa fa-calendar fa-fw"></i>books</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96"><span class="nav-number">1.</span> <span class="nav-text">添加依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E5%85%83%E6%95%B0%E6%8D%AE"><span class="nav-number">2.</span> <span class="nav-text">构建元数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%85%83%E6%95%B0%E6%8D%AE"><span class="nav-number">3.</span> <span class="nav-text">加载元数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89sql"><span class="nav-number">4.</span> <span class="nav-text">定义sql</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81SQL"><span class="nav-number">5.</span> <span class="nav-text">验证SQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E5%8D%B0%E9%80%BB%E8%BE%91%E8%AE%A1%E5%88%92%E4%B8%8E%E7%89%A9%E7%90%86%E8%AE%A1%E5%88%92"><span class="nav-number">6.</span> <span class="nav-text">打印逻辑计划与物理计划</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DEMO%E5%8F%8A%E6%89%A7%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">DEMO及执行结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%96%87%E4%BB%B6CalciteRelCase-java"><span class="nav-number">7.1.</span> <span class="nav-text">代码文件CalciteRelCase.java</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">7.2.</span> <span class="nav-text">执行结果</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dafei1288"
+      src="/images/SouthParkJAG-small.png">
+  <p class="site-author-name" itemprop="name">dafei1288</p>
+  <div class="site-description" itemprop="description">description</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/dafei1288" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/dafei1288" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fa fa-globe fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          Links
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://tensorstream.cn/" title="http:&#x2F;&#x2F;tensorstream.cn" rel="noopener" target="_blank">麒思妙想</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://dafei1288.com/2023/06/22/1001_calcite-sql-parser-demo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/SouthParkJAG-small.png">
+      <meta itemprop="name" content="dafei1288">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="麒思妙想">
+      <meta itemprop="description" content="description">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="手把手教你使用calcite解析SQL | 麒思妙想">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          手把手教你使用calcite解析SQL
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-22 17:12:17" itemprop="dateCreated datePublished" datetime="2023-06-22T17:12:17+08:00">2023-06-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-07-01 17:18:04" itemprop="dateModified" datetime="2023-07-01T17:18:04+08:00">2023-07-01</time>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2023/06/22/1001_calcite-sql-parser-demo/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/06/22/1001_calcite-sql-parser-demo/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>大家好，我又腆着大脸来更新了，也是知道自己鸽了很久很久，也就不找说辞了，尽管确实是有点遭不住996了。还是恭祝大家端午安康吧。对于最近越发火爆的<code>calcite</code>,作为一个18年就开始翻译官方文档的作者来说，真是很欣慰，大家都用他来干什么呢？很多同学都是想用他来重写SQL，或者做优化。反正无论如何，还是需要对他有一定的了解，今天我来和大家分享一下，如何从代码端来解析SQL。</p>
+<span id="more"></span>
+
+<h2 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h2><p>我们使用csv来做数据源</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.calcite<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>calcite-core<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.34.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br><br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.calcite<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>calcite-example-csv<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.21.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="构建元数据"><a href="#构建元数据" class="headerlink" title="构建元数据"></a>构建元数据</h2><p>这里我们使用2个csv来模拟2张数据表，订单表和消费者表<br>orders.csv</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">id</span>,goods,price,amount,user_id<br><span class="hljs-attribute">1</span>,book,<span class="hljs-number">100</span>,<span class="hljs-number">100</span>,<span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<p>consumers.csv</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">id</span>,firstname,lastname,birth<br><span class="hljs-attribute">1</span>,li,jacky,<span class="hljs-number">1984</span><br><span class="hljs-attribute">2</span>,li,doudou,<span class="hljs-number">2019</span><br><span class="hljs-attribute">3</span>,li,maimai,<span class="hljs-number">2019</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="加载元数据"><a href="#加载元数据" class="headerlink" title="加载元数据"></a>加载元数据</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">SchemaPlus</span> <span class="hljs-variable">rootSchema</span> <span class="hljs-operator">=</span> Frameworks.createRootSchema(<span class="hljs-literal">true</span>);<br><span class="hljs-type">String</span> <span class="hljs-variable">csvPath</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;src\\main\\resources\\db&quot;</span>;<br><span class="hljs-type">CsvSchema</span> <span class="hljs-variable">csvSchema</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CsvSchema</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(csvPath), CsvTable.Flavor.SCANNABLE);<br>rootSchema.add(<span class="hljs-string">&quot;orders&quot;</span>, csvSchema.getTable(<span class="hljs-string">&quot;orders&quot;</span>));<br>rootSchema.add(<span class="hljs-string">&quot;consumers&quot;</span>, csvSchema.getTable(<span class="hljs-string">&quot;consumers&quot;</span>));<br></code></pre></td></tr></table></figure>
+
+<h2 id="定义sql"><a href="#定义sql" class="headerlink" title="定义sql"></a>定义sql</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> o.id, o.goods, o.price, o.amount, c.firstname, c.lastname <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">AS</span> o <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">OUTER</span> <span class="hljs-keyword">JOIN</span> consumers c <span class="hljs-keyword">ON</span> o.user_id <span class="hljs-operator">=</span> c.id <span class="hljs-keyword">WHERE</span> o.amount <span class="hljs-operator">&gt;</span> <span class="hljs-number">30</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> o.id LIMIT <span class="hljs-number">5</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="验证SQL"><a href="#验证SQL" class="headerlink" title="验证SQL"></a>验证SQL</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">JavaTypeFactoryImpl</span> <span class="hljs-variable">sqlTypeFactory</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JavaTypeFactoryImpl</span>();<br><span class="hljs-type">Properties</span> <span class="hljs-variable">properties</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Properties</span>();<br>properties.setProperty(CalciteConnectionProperty.CASE_SENSITIVE.camelName(), <span class="hljs-string">&quot;false&quot;</span>);<br><span class="hljs-comment">// reader 接收 schema，用于检测字段名、字段类型、表名等是否存在和一致</span><br><span class="hljs-type">CalciteCatalogReader</span> <span class="hljs-variable">catalogReader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CalciteCatalogReader</span>(<br>        CalciteSchema.from(rootSchema),<br>        CalciteSchema.from(rootSchema).path(<span class="hljs-literal">null</span>),<br>        sqlTypeFactory,<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">CalciteConnectionConfigImpl</span>(properties));<br><span class="hljs-comment">// 简单示例，大部分参数采用默认值即可</span><br><span class="hljs-type">SqlValidator</span> <span class="hljs-variable">validator</span> <span class="hljs-operator">=</span> SqlValidatorUtil.newValidator(<br>        SqlStdOperatorTable.instance(),<br>        catalogReader,<br>        sqlTypeFactory,<br>        SqlValidator.Config.DEFAULT);<br><span class="hljs-comment">// validate: SqlNode -&gt; SqlNode</span><br><span class="hljs-type">SqlNode</span> <span class="hljs-variable">sqlNodeValidated</span> <span class="hljs-operator">=</span> validator.validate(sqlNodeParsed);<br></code></pre></td></tr></table></figure>
+
+<h2 id="打印逻辑计划与物理计划"><a href="#打印逻辑计划与物理计划" class="headerlink" title="打印逻辑计划与物理计划"></a>打印逻辑计划与物理计划</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">RexBuilder</span> <span class="hljs-variable">rexBuilder</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RexBuilder</span>(sqlTypeFactory);<br><span class="hljs-type">HepProgramBuilder</span> <span class="hljs-variable">hepProgramBuilder</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HepProgramBuilder</span>();<br>hepProgramBuilder.addRuleInstance(CoreRules.FILTER_INTO_JOIN);<br><br><span class="hljs-type">HepPlanner</span> <span class="hljs-variable">hepPlanner</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HepPlanner</span>(hepProgramBuilder.build());<br>hepPlanner.addRelTraitDef(ConventionTraitDef.INSTANCE);<br><br><span class="hljs-type">RelOptCluster</span> <span class="hljs-variable">relOptCluster</span> <span class="hljs-operator">=</span> RelOptCluster.create(hepPlanner, rexBuilder);<br><span class="hljs-type">SqlToRelConverter</span> <span class="hljs-variable">sqlToRelConverter</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SqlToRelConverter</span>(<br>        <span class="hljs-comment">// 没有使用 view</span><br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">RelOptTable</span>.ViewExpander() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> RelRoot <span class="hljs-title function_">expandView</span><span class="hljs-params">(RelDataType rowType, String queryString, List&lt;String&gt; schemaPath,  List&lt;String&gt; viewPath)</span> &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>            &#125;<br>        &#125;,<br>        validator,<br>        catalogReader,<br>        relOptCluster,<br><span class="hljs-comment">// 均使用标准定义即可</span><br>StandardConvertletTable.INSTANCE,<br>        SqlToRelConverter.config());<br><span class="hljs-type">RelRoot</span> <span class="hljs-variable">logicalPlan</span> <span class="hljs-operator">=</span> sqlToRelConverter.convertQuery(sqlNodeValidated, <span class="hljs-literal">false</span>, <span class="hljs-literal">true</span>);<br><br>System.out.println();<br>System.out.println(RelOptUtil.dumpPlan(<span class="hljs-string">&quot;[Logical plan]&quot;</span>, logicalPlan.rel, SqlExplainFormat.TEXT, SqlExplainLevel.NON_COST_ATTRIBUTES));<br><br>hepPlanner.setRoot(logicalPlan.rel);<br><span class="hljs-type">RelNode</span> <span class="hljs-variable">phyPlan</span> <span class="hljs-operator">=</span> hepPlanner.findBestExp();<br>System.out.println(RelOptUtil.dumpPlan(<span class="hljs-string">&quot;[Physical plan]&quot;</span>, phyPlan, SqlExplainFormat.TEXT, SqlExplainLevel.NON_COST_ATTRIBUTES));<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="DEMO及执行结果"><a href="#DEMO及执行结果" class="headerlink" title="DEMO及执行结果"></a>DEMO及执行结果</h2><h3 id="代码文件CalciteRelCase-java"><a href="#代码文件CalciteRelCase-java" class="headerlink" title="代码文件CalciteRelCase.java"></a>代码文件<code>CalciteRelCase.java</code></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.dafei1288;<br><br><br><span class="hljs-keyword">import</span> org.apache.calcite.adapter.csv.*;<br><span class="hljs-keyword">import</span> org.apache.calcite.config.CalciteConnectionConfigImpl;<br><span class="hljs-keyword">import</span> org.apache.calcite.config.CalciteConnectionProperty;<br><span class="hljs-keyword">import</span> org.apache.calcite.jdbc.CalciteSchema;<br><span class="hljs-keyword">import</span> org.apache.calcite.jdbc.JavaTypeFactoryImpl;<br><span class="hljs-keyword">import</span> org.apache.calcite.plan.ConventionTraitDef;<br><span class="hljs-keyword">import</span> org.apache.calcite.plan.RelOptCluster;<br><span class="hljs-keyword">import</span> org.apache.calcite.plan.RelOptTable;<br><span class="hljs-keyword">import</span> org.apache.calcite.plan.RelOptUtil;<br><span class="hljs-keyword">import</span> org.apache.calcite.plan.hep.HepPlanner;<br><span class="hljs-keyword">import</span> org.apache.calcite.plan.hep.HepProgramBuilder;<br><span class="hljs-keyword">import</span> org.apache.calcite.prepare.CalciteCatalogReader;<br><span class="hljs-keyword">import</span> org.apache.calcite.rel.RelNode;<br><span class="hljs-keyword">import</span> org.apache.calcite.rel.RelRoot;<br><span class="hljs-keyword">import</span> org.apache.calcite.rel.rules.CoreRules;<br><span class="hljs-keyword">import</span> org.apache.calcite.rel.type.*;<br><span class="hljs-keyword">import</span> org.apache.calcite.rex.RexBuilder;<br><span class="hljs-keyword">import</span> org.apache.calcite.schema.SchemaPlus;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql.*;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql.fun.SqlStdOperatorTable;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql.parser.SqlParser;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql.validate.SqlValidator;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql.validate.SqlValidatorUtil;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql2rel.SqlToRelConverter;<br><span class="hljs-keyword">import</span> org.apache.calcite.sql2rel.StandardConvertletTable;<br><span class="hljs-keyword">import</span> org.apache.calcite.tools.Frameworks;<br><br><br><span class="hljs-keyword">import</span> java.io.File;<br><span class="hljs-keyword">import</span> java.util.List;<br><span class="hljs-keyword">import</span> java.util.Properties;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * CalciteRelCase</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CalciteRelCase</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">( String[] args )</span> <span class="hljs-keyword">throws</span> Exception&#123;<br><br>        <span class="hljs-comment">// Convert query to SqlNode</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">sql</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;SELECT o.id, o.goods, o.price, o.amount, c.firstname, c.lastname FROM orders AS o LEFT OUTER JOIN consumers c ON o.user_id = c.id WHERE o.amount &gt; 30 ORDER BY o.id LIMIT 5&quot;</span>;<br>        SqlParser.<span class="hljs-type">Config</span> <span class="hljs-variable">config</span> <span class="hljs-operator">=</span> SqlParser.configBuilder().setCaseSensitive(<span class="hljs-literal">false</span>).build();<br>        <span class="hljs-type">SqlParser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> SqlParser.create(sql, config);<br><br>        <span class="hljs-type">SqlNode</span> <span class="hljs-variable">sqlNodeParsed</span> <span class="hljs-operator">=</span> parser.parseQuery();<br>        System.out.println(<span class="hljs-string">&quot;[parsed sqlNode]&quot;</span>);<br>        System.out.println(sqlNodeParsed);<br><br>        <span class="hljs-type">SchemaPlus</span> <span class="hljs-variable">rootSchema</span> <span class="hljs-operator">=</span> Frameworks.createRootSchema(<span class="hljs-literal">true</span>);<br>        <span class="hljs-type">String</span> <span class="hljs-variable">csvPath</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;src\\main\\resources\\db&quot;</span>;<br>        <span class="hljs-type">CsvSchema</span> <span class="hljs-variable">csvSchema</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CsvSchema</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(csvPath), CsvTable.Flavor.SCANNABLE);<br><br><br><span class="hljs-comment">//        CsvTableFactory csvTableFactory = new CsvTableFactory();</span><br><span class="hljs-comment">//        Map&lt;String,Object&gt; operand = new HashMap&lt;&gt;();</span><br><span class="hljs-comment">//        operand.put(&quot;file&quot;,authorPath);</span><br><span class="hljs-comment">//        operand.put(&quot;flavor&quot;, &quot;scannable&quot;);</span><br><span class="hljs-comment">//        CsvTable aC = csvTableFactory.create(rootSchema,&quot;author&quot;,operand,null);</span><br><span class="hljs-comment">//        CsvTableFactory csvTableFactoryB = new CsvTableFactory();</span><br><span class="hljs-comment">//        Map&lt;String,Object&gt; operandB = new HashMap&lt;&gt;();</span><br><span class="hljs-comment">//        operandB.put(&quot;file&quot;,bookPath);</span><br><span class="hljs-comment">//        operandB.put(&quot;flavor&quot;, &quot;scannable&quot;);</span><br><span class="hljs-comment">//        CsvTable bC = csvTableFactoryB.create(rootSchema,&quot;book&quot;,operandB,null);</span><br><br><br>        rootSchema.add(<span class="hljs-string">&quot;orders&quot;</span>, csvSchema.getTable(<span class="hljs-string">&quot;orders&quot;</span>));<br>        rootSchema.add(<span class="hljs-string">&quot;consumers&quot;</span>, csvSchema.getTable(<span class="hljs-string">&quot;consumers&quot;</span>));<br><br>        <span class="hljs-type">JavaTypeFactoryImpl</span> <span class="hljs-variable">sqlTypeFactory</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JavaTypeFactoryImpl</span>();<br>        <span class="hljs-type">Properties</span> <span class="hljs-variable">properties</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Properties</span>();<br>        properties.setProperty(CalciteConnectionProperty.CASE_SENSITIVE.camelName(), <span class="hljs-string">&quot;false&quot;</span>);<br>        <span class="hljs-comment">// reader 接收 schema，用于检测字段名、字段类型、表名等是否存在和一致</span><br>        <span class="hljs-type">CalciteCatalogReader</span> <span class="hljs-variable">catalogReader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CalciteCatalogReader</span>(<br>                CalciteSchema.from(rootSchema),<br>                CalciteSchema.from(rootSchema).path(<span class="hljs-literal">null</span>),<br>                sqlTypeFactory,<br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">CalciteConnectionConfigImpl</span>(properties));<br>        <span class="hljs-comment">// 简单示例，大部分参数采用默认值即可</span><br>        <span class="hljs-type">SqlValidator</span> <span class="hljs-variable">validator</span> <span class="hljs-operator">=</span> SqlValidatorUtil.newValidator(<br>                SqlStdOperatorTable.instance(),<br>                catalogReader,<br>                sqlTypeFactory,<br>                SqlValidator.Config.DEFAULT);<br>        <span class="hljs-comment">// validate: SqlNode -&gt; SqlNode</span><br>        <span class="hljs-type">SqlNode</span> <span class="hljs-variable">sqlNodeValidated</span> <span class="hljs-operator">=</span> validator.validate(sqlNodeParsed);<br>        System.out.println();<br>        System.out.println(<span class="hljs-string">&quot;[validated sqlNode]&quot;</span>);<br>        System.out.println(sqlNodeValidated);<br><br><br><br><br>        <span class="hljs-type">RexBuilder</span> <span class="hljs-variable">rexBuilder</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RexBuilder</span>(sqlTypeFactory);<br>        <span class="hljs-type">HepProgramBuilder</span> <span class="hljs-variable">hepProgramBuilder</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HepProgramBuilder</span>();<br>        hepProgramBuilder.addRuleInstance(CoreRules.FILTER_INTO_JOIN);<br><br>        <span class="hljs-type">HepPlanner</span> <span class="hljs-variable">hepPlanner</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HepPlanner</span>(hepProgramBuilder.build());<br>        hepPlanner.addRelTraitDef(ConventionTraitDef.INSTANCE);<br><br>        <span class="hljs-type">RelOptCluster</span> <span class="hljs-variable">relOptCluster</span> <span class="hljs-operator">=</span> RelOptCluster.create(hepPlanner, rexBuilder);<br>        <span class="hljs-type">SqlToRelConverter</span> <span class="hljs-variable">sqlToRelConverter</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SqlToRelConverter</span>(<br>                <span class="hljs-comment">// 没有使用 view</span><br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">RelOptTable</span>.ViewExpander() &#123;<br>                    <span class="hljs-meta">@Override</span><br>                    <span class="hljs-keyword">public</span> RelRoot <span class="hljs-title function_">expandView</span><span class="hljs-params">(RelDataType rowType, String queryString, List&lt;String&gt; schemaPath,  List&lt;String&gt; viewPath)</span> &#123;<br>                        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>                    &#125;<br>                &#125;,<br>                validator,<br>                catalogReader,<br>                relOptCluster,<br>        <span class="hljs-comment">// 均使用标准定义即可</span><br>        StandardConvertletTable.INSTANCE,<br>                SqlToRelConverter.config());<br>        <span class="hljs-type">RelRoot</span> <span class="hljs-variable">logicalPlan</span> <span class="hljs-operator">=</span> sqlToRelConverter.convertQuery(sqlNodeValidated, <span class="hljs-literal">false</span>, <span class="hljs-literal">true</span>);<br><br>        System.out.println();<br>        System.out.println(RelOptUtil.dumpPlan(<span class="hljs-string">&quot;[Logical plan]&quot;</span>, logicalPlan.rel, SqlExplainFormat.TEXT, SqlExplainLevel.NON_COST_ATTRIBUTES));<br><br><br><br><br><br>        hepPlanner.setRoot(logicalPlan.rel);<br>        <span class="hljs-type">RelNode</span> <span class="hljs-variable">phyPlan</span> <span class="hljs-operator">=</span> hepPlanner.findBestExp();<br>        System.out.println(RelOptUtil.dumpPlan(<span class="hljs-string">&quot;[Physical plan]&quot;</span>, phyPlan, SqlExplainFormat.TEXT, SqlExplainLevel.NON_COST_ATTRIBUTES));<br><br><br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="执行结果"><a href="#执行结果" class="headerlink" title="执行结果"></a>执行结果</h3><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey">[parsed sqlNode]<br>SELECT `O`.`ID`, `O`.`GOODS`, `O`.`PRICE`, `O`.`AMOUNT`, `C`.`FIRSTNAME`, `C`.`LASTNAME`<br>FROM `ORDERS` AS `O`<br>LEFT JOIN `CONSUMERS` AS `C` ON `O`.`USER_ID` = `C`.`ID`<br>WHERE `O`.`AMOUNT` &gt; <span class="hljs-number">30</span><br>ORDER BY `O`.`ID`<br>FETCH NEXT <span class="hljs-number">5</span> ROWS ONLY<br><br>[validated sqlNode]<br>SELECT `O`.`ID`, `O`.`GOODS`, `O`.`PRICE`, `O`.`AMOUNT`, `C`.`FIRSTNAME`, `C`.`LASTNAME`<br>FROM `ORDERS` AS `O`<br>LEFT JOIN `CONSUMERS` AS `C` ON `O`.`user_id` = `C`.`id`<br>WHERE CAST(`O`.`amount` AS INTEGER) &gt; <span class="hljs-number">30</span><br>ORDER BY `O`.`id`<br>FETCH NEXT <span class="hljs-number">5</span> ROWS ONLY<br><br>[Logical plan]<br>LogicalSort(sort0=[$<span class="hljs-number">0</span>], dir0=[ASC], fetch=[<span class="hljs-number">5</span>]), id = <span class="hljs-number">10</span><br>  LogicalProject(ID=[$<span class="hljs-number">0</span>], GOODS=[$<span class="hljs-number">1</span>], PRICE=[$<span class="hljs-number">2</span>], AMOUNT=[$<span class="hljs-number">3</span>], FIRSTNAME=[$<span class="hljs-number">6</span>], LASTNAME=[$<span class="hljs-number">7</span>]), id = <span class="hljs-number">9</span><br><span class="hljs-title">    LogicalFilter(condition=[&gt;(CAST($3):</span>INTEGER <span class="hljs-literal">NOT</span> NULL, <span class="hljs-number">30</span>)]), id = <span class="hljs-number">6</span><br>      LogicalJoin(condition=[=($<span class="hljs-number">4</span>, $<span class="hljs-number">5</span>)], joinType=[left]), id = <span class="hljs-number">5</span><br>        LogicalTableScan(table=[[orders]]), id = <span class="hljs-number">1</span><br>        LogicalTableScan(table=[[consumers]]), id = <span class="hljs-number">3</span><br><br>[Physical plan]<br>LogicalSort(sort0=[$<span class="hljs-number">0</span>], dir0=[ASC], fetch=[<span class="hljs-number">5</span>]), id = <span class="hljs-number">19</span><br>  LogicalProject(ID=[$<span class="hljs-number">0</span>], GOODS=[$<span class="hljs-number">1</span>], PRICE=[$<span class="hljs-number">2</span>], AMOUNT=[$<span class="hljs-number">3</span>], FIRSTNAME=[$<span class="hljs-number">6</span>], LASTNAME=[$<span class="hljs-number">7</span>]), id = <span class="hljs-number">17</span><br>    LogicalJoin(condition=[=($<span class="hljs-number">4</span>, $<span class="hljs-number">5</span>)], joinType=[left]), id = <span class="hljs-number">24</span><br><span class="hljs-title">      LogicalFilter(condition=[&gt;(CAST($3):</span>INTEGER <span class="hljs-literal">NOT</span> NULL, <span class="hljs-number">30</span>)]), id = <span class="hljs-number">21</span><br>        LogicalTableScan(table=[[orders]]), id = <span class="hljs-number">1</span><br>      LogicalTableScan(table=[[consumers]]), id = <span class="hljs-number">3</span><br><br></code></pre></td></tr></table></figure>
+
+<p>好了，今天就分享到这了，接下会对<code>calcite</code>做更多解读，欢迎大家订阅，转发，谢了!!!</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/database/" rel="tag"># database</a>
+              <a href="/tags/calcite/" rel="tag"># calcite</a>
+              <a href="/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/" rel="tag"># 编译原理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/04/08/pgxl/" rel="prev" title="十分钟搭建实验分布式数据库环境">
+                  <i class="fa fa-chevron-left"></i> 十分钟搭建实验分布式数据库环境
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/07/01/1002_calcite-sql-creator/" rel="next" title="如何使用calcite构建SQL并执行查询">
+                  如何使用calcite构建SQL并执行查询 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">津ICP备 15004116号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2014 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dafei1288</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>违法和不良信息举报电话: 022-26562406 | 举报邮箱 : jianfeiya2023@163.com | 网站举报入口: www.qinglangtianjin.com
+
+    </div>
+  </footer>
+
+  
+  <script type="text/javascript" src="/js/third-party/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"jacky128899","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>
