@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"dafei1288.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="上一篇文章我们介绍了如何使用默认规则做条件下推，今天我们来尝试自定义规则，来实现对SQL的重写。我们本期将会深入浅出的以修改查询表为例，进行Sql rewrite,这应该在我们湖仓一体的架构中，处于核心地位的需求。我们今天就深入浅出的来做一个案例 Select * from consumers 实际查询则为 Select * from consumers_1，这个需求在分库分表里应该也很常见了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何使用calcite rule做SQL重写（下）">
+<meta property="og:url" content="http://dafei1288.com/2023/08/18/1004-calcite-sql-custom-rule/index.html">
+<meta property="og:site_name" content="麒思妙想">
+<meta property="og:description" content="上一篇文章我们介绍了如何使用默认规则做条件下推，今天我们来尝试自定义规则，来实现对SQL的重写。我们本期将会深入浅出的以修改查询表为例，进行Sql rewrite,这应该在我们湖仓一体的架构中，处于核心地位的需求。我们今天就深入浅出的来做一个案例 Select * from consumers 实际查询则为 Select * from consumers_1，这个需求在分库分表里应该也很常见了。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://dafei1288.com/img/blog/1004/lakehouse.png">
+<meta property="og:image" content="http://dafei1288.com/img/blog/1004/11-hep.png">
+<meta property="og:image" content="http://dafei1288.com/img/blog/1004/ast2logicplan.png">
+<meta property="article:published_time" content="2023-08-18T07:10:43.000Z">
+<meta property="article:modified_time" content="2023-08-31T11:09:31.358Z">
+<meta property="article:author" content="dafei1288">
+<meta property="article:tag" content="database">
+<meta property="article:tag" content="calcite">
+<meta property="article:tag" content="编译原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://dafei1288.com/img/blog/1004/lakehouse.png">
+
+
+<link rel="canonical" href="http://dafei1288.com/2023/08/18/1004-calcite-sql-custom-rule/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://dafei1288.com/2023/08/18/1004-calcite-sql-custom-rule/","path":"2023/08/18/1004-calcite-sql-custom-rule/","title":"如何使用calcite rule做SQL重写（下）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>如何使用calcite rule做SQL重写（下） | 麒思妙想</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+  <!-- 页面点击小红心 -->
+  <!-- <script type="text/javascript" src="/js/src/clicklove.js"></script> -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">麒思妙想</p>
+      <i class="logo-line"></i>
+    </a>
+    <p class="site-subtitle" itemprop="description">分布式, AI+BI, 数据库, 架构</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-books"><a href="/books/" rel="section"><i class="fa fa-calendar fa-fw"></i>books</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B9%96%E4%BB%93%E4%B8%80%E4%BD%93"><span class="nav-number">1.</span> <span class="nav-text">湖仓一体</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93"><span class="nav-number">1.1.</span> <span class="nav-text">数据仓库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B9%96"><span class="nav-number">1.2.</span> <span class="nav-text">数据湖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B9%96%E4%BB%93%E4%B8%80%E4%BD%93-1"><span class="nav-number">1.3.</span> <span class="nav-text">湖仓一体</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">执行流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E6%95%B0%E6%8D%AE"><span class="nav-number">3.</span> <span class="nav-text">准备数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#consumers-csv"><span class="nav-number">3.1.</span> <span class="nav-text">consumers.csv</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#consumers-1-csv"><span class="nav-number">3.2.</span> <span class="nav-text">consumers_1.csv</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E8%A7%84%E5%88%99"><span class="nav-number">4.</span> <span class="nav-text">自定义规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">测试代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C%E5%B1%95%E7%A4%BA"><span class="nav-number">6.</span> <span class="nav-text">结果展示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SqlNode-RelNode-RexNode"><span class="nav-number">7.</span> <span class="nav-text">SqlNode RelNode RexNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%BF%9E%E6%8E%A5"><span class="nav-number">8.</span> <span class="nav-text">参考连接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dafei1288"
+      src="/images/SouthParkJAG-small.png">
+  <p class="site-author-name" itemprop="name">dafei1288</p>
+  <div class="site-description" itemprop="description">description</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/dafei1288" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/dafei1288" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fa fa-globe fa-fw"></i>CSDN</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/jacky1288" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;jacky1288" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Zhihu</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/dafei1288" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;dafei1288" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          Links
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://tensorstream.cn/" title="http:&#x2F;&#x2F;tensorstream.cn" rel="noopener" target="_blank">麒思妙想</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://dafei1288.com/2023/08/18/1004-calcite-sql-custom-rule/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/SouthParkJAG-small.png">
+      <meta itemprop="name" content="dafei1288">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="麒思妙想">
+      <meta itemprop="description" content="description">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="如何使用calcite rule做SQL重写（下） | 麒思妙想">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何使用calcite rule做SQL重写（下）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-08-18 15:10:43" itemprop="dateCreated datePublished" datetime="2023-08-18T15:10:43+08:00">2023-08-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-08-31 19:09:31" itemprop="dateModified" datetime="2023-08-31T19:09:31+08:00">2023-08-31</time>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2023/08/18/1004-calcite-sql-custom-rule/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/08/18/1004-calcite-sql-custom-rule/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>上一篇文章我们介绍了如何使用默认规则做条件下推，今天我们来尝试自定义规则，来实现对SQL的重写。<br>我们本期将会深入浅出的以修改查询表为例，进行Sql rewrite,这应该在我们湖仓一体的架构中，处于核心地位的需求。我们今天就深入浅出的来做一个案例 <code>Select * from consumers</code> 实际查询则为 <code>Select * from consumers_1</code>，这个需求在分库分表里应该也很常见了。</p>
+<span id="more"></span>
+
+
+<h2 id="湖仓一体"><a href="#湖仓一体" class="headerlink" title="湖仓一体"></a>湖仓一体</h2><h3 id="数据仓库"><a href="#数据仓库" class="headerlink" title="数据仓库"></a>数据仓库</h3><p>数据仓库是一个面向主题的、集成的、相对稳定的、反映历史变化的数据存储系统，它主要存储的是结构化数据，历史数据通过抽取、转换、整合以及清理，并导入到目标表中，主要用于业务决策分析。</p>
+<p>随着当前大量信息化发展和电子设备产品普及，产生大量的照片、视频、文档等非结构化数据，人们也想通过大数据技术找到这些数据的关系，所以设计了一个比数据仓库还要大的系统，可以把非结构化和结构化数据共同存储和做一些处理，这个系统叫做数据湖。</p>
+<h3 id="数据湖"><a href="#数据湖" class="headerlink" title="数据湖"></a>数据湖</h3><p>数据湖是一个以原始格式存储数据的存储库或系统，它按原样存储数据，而无需事先对数据进行结构化处理，可以存储结构化数据（如关系型数据库中的表），半结构化数据（如CSV、日志、XML、JSON），非结构化数据（如电子邮件、文档、PDF）和二进制数据（如图片、音频、视频），以供机器学习、深度学习、统计分析等多种形式数据分析应用。</p>
+<p>数据湖开放的数据存储结构给数据入湖带来了更大的灵活性，各种结构化、半结构化、非结构化的原始数据可以直接入湖。另外，开放存储给上层的计算引擎也带来了更多的灵活度，各种计算引擎需要遵循相当宽松的兼容性约定即可根据自己针对的场景随意读写数据湖中的数据。而数据仓库则更关注数据使用效率、数据的安全性和数据治理能力，这对企业的长远的成长性发展至关重要。</p>
+<h3 id="湖仓一体-1"><a href="#湖仓一体-1" class="headerlink" title="湖仓一体"></a>湖仓一体</h3><p>湖仓一体是一种新型开放式架构，将数据湖和数据仓库的优势充分结合，它构建在数据湖低成本的数据存储架构之上，又继承了数据仓库的数据处理和管理功能。湖仓一体打通数据湖和数据仓库两套体系，让数据和计算在湖和仓之间自由流动，更能发挥出数据湖的灵活性，以及数据数据仓库的成长性。</p>
+<p>但是湖仓一体≠数据湖+数据仓库，湖仓一体不等同于数据湖和数据仓简单打通，湖仓一体的构建需要解决以下三个关键问题：</p>
+<p>湖和仓的数据&#x2F;元数据在不需要用户人工干预的情况下，可以无缝打通、自由顺畅地流动；</p>
+<p>系统根据特定的规则自动地将数据在湖仓之间进行缓存和移动，根据规则自动决定哪些数据放在数仓，哪些保留在数据湖，进而形成一体化；</p>
+<p>湖和仓有统一的开发体验，存储在不同系统的数据，可以通过一个统一的开发&#x2F;管理平台操作。</p>
+<p><strong><strong>以上内容引用自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u010022051/article/details/125609517">湖仓一体数据平台架构</a></strong></strong></p>
+<p><img src="/./img/blog/1004/lakehouse.png"></p>
+<p>上图是我设想的一种湖仓一体架构，<code>JimSQL</code> 可以考虑支持这种架构了。 夹带一个私货 <code>JimSql = Jim Isn’t MySQL. Jim is a filesystem database system implemention use Java.</code> 笔者开源的一个数据库，目前正在使用 <code>bitcask</code> 升级存储系统，欢迎有兴趣的小伙伴一起搞起来呀！</p>
+<h2 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h2><p>我们再来复习一下执行流程，借用 柳年思水 大佬的图，HepPlanner 在优化过程中，是先遍历规则，然后再对每个节点进行匹配转换，直到满足条件（超过限制次数或者规则遍历完一遍不会再有新的变化）</p>
+<p><img src="/./img/blog/1004/11-hep.png"></p>
+<h2 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h2><p>首先我们先准备数据，延用我们一直的案例，将<code>consumers.csv</code>再复制一份<code>consumers_1.csv</code>并修改里面的记录，用于区分效果。</p>
+<h3 id="consumers-csv"><a href="#consumers-csv" class="headerlink" title="consumers.csv"></a>consumers.csv</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">id,firstname,lastname,birth</span><br><span class="line">1,li,jacky,1984</span><br><span class="line">2,li,doudou,2019</span><br><span class="line">3,li,maimai,2019</span><br></pre></td></tr></table></figure>
+
+<h3 id="consumers-1-csv"><a href="#consumers-1-csv" class="headerlink" title="consumers_1.csv"></a>consumers_1.csv</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">id,firstname,lastname,birth</span><br><span class="line">1,liu,jacky,1984</span><br><span class="line">2,liu,doudou,2019</span><br><span class="line">3,liu,maimai,2019</span><br></pre></td></tr></table></figure>
+
+<h2 id="自定义规则"><a href="#自定义规则" class="headerlink" title="自定义规则"></a>自定义规则</h2><p>根据我们的需求，实际上只需要在扫描表的适合，对应的将源表替换为目标表即可，<br>所以，在<code>onMatch(final RelOptRuleCall call)</code>方法里，匹配到映射关系，将源表替换成重新生成的<code>RelNode</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TableScan</span> <span class="variable">tableScan</span> <span class="operator">=</span> call.rel(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(String tn : tableScan.getTable().getQualifiedName())&#123;</span><br><span class="line">    <span class="keyword">if</span>(srcName.equals(tn))&#123;</span><br><span class="line">        <span class="type">RelBuilder</span> <span class="variable">relBuilder</span> <span class="operator">=</span> RelBuilder.create(frameworkConfig);</span><br><span class="line">        <span class="type">RelNode</span> <span class="variable">relNode</span> <span class="operator">=</span> relBuilder.scan(targetName).build();</span><br><span class="line">         call.transformTo(relNode);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构建配置的匹配规则</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">default</span> JackyTableRenameRule.Config <span class="title function_">withOperandFor</span><span class="params">(Class&lt;? extends TableScan&gt; tableScanClass)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> withOperandSupplier(b0 -&gt;</span><br><span class="line">                    b0.operand(tableScanClass).anyInputs())</span><br><span class="line">                    .as(JackyTableRenameRule.Config.class);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>以下是完整代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">package</span> com.dafei1288;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.RelOptRuleCall;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.RelRule;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.RelNode;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.core.TableScan;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.rules.*;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.FrameworkConfig;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.RelBuilder;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.RelBuilderFactory;</span><br><span class="line"><span class="keyword">import</span> org.immutables.value.Value;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Value</span>.Enclosing</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JackyTableRenameRule</span> <span class="keyword">extends</span> <span class="title class_">RelRule</span>&lt;JackyTableRenameRule.Config&gt; <span class="keyword">implements</span> <span class="title class_">TransformationRule</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String srcName;</span><br><span class="line">    <span class="keyword">private</span> String targetName;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> FrameworkConfig frameworkConfig;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getSrcName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> srcName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSrcName</span><span class="params">(String srcName)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.srcName = srcName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getTargetName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> targetName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setTargetName</span><span class="params">(String targetName)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.targetName = targetName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> FrameworkConfig <span class="title function_">getFrameworkConfig</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> frameworkConfig;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setFrameworkConfig</span><span class="params">(FrameworkConfig frameworkConfig)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.frameworkConfig = frameworkConfig;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">JackyTableRenameRule</span><span class="params">(Config config)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>( config );</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Deprecated</span> <span class="comment">// to be removed before 2.0</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">JackyTableRenameRule</span><span class="params">(RelBuilderFactory relBuilderFactory)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(JackyTableRenameRule.Config.DEFAULT.withRelBuilderFactory(relBuilderFactory)</span><br><span class="line">                .as(JackyTableRenameRule.Config.class));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onMatch</span><span class="params">(<span class="keyword">final</span> RelOptRuleCall call)</span> &#123;</span><br><span class="line">        <span class="type">TableScan</span> <span class="variable">tableScan</span> <span class="operator">=</span> call.rel(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(String tn : tableScan.getTable().getQualifiedName())&#123;</span><br><span class="line">            <span class="keyword">if</span>(srcName.equals(tn))&#123;</span><br><span class="line">                <span class="type">RelBuilder</span> <span class="variable">relBuilder</span> <span class="operator">=</span> RelBuilder.create(frameworkConfig);</span><br><span class="line">                <span class="type">RelNode</span> <span class="variable">relNode</span> <span class="operator">=</span> relBuilder.scan(targetName).build();</span><br><span class="line">                call.transformTo(relNode);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value</span>.Immutable</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Config</span> <span class="keyword">extends</span> <span class="title class_">RelRule</span>.Config &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">static</span></span><br><span class="line">        <span class="type">Config</span> <span class="variable">DEFAULT</span> <span class="operator">=</span> ImmutableJackyTableRenameRule.Config.builder().build().withOperandFor(TableScan.class);</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span> <span class="keyword">default</span> JackyTableRenameRule <span class="title function_">toRule</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">JackyTableRenameRule</span>(<span class="built_in">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span> JackyTableRenameRule <span class="title function_">toRule</span><span class="params">(String srcName, String targetName)</span> &#123;</span><br><span class="line">            <span class="type">JackyTableRenameRule</span> <span class="variable">jtrr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">JackyTableRenameRule</span>(<span class="built_in">this</span>);</span><br><span class="line">            jtrr.setSrcName(srcName);</span><br><span class="line">            jtrr.setTargetName(targetName);</span><br><span class="line">            <span class="keyword">return</span> jtrr;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="meta">@Value</span>.Default <span class="keyword">default</span> <span class="type">boolean</span> <span class="title function_">isAllowAlwaysTrueCondition</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span> JackyTableRenameRule.Config <span class="title function_">withOperandFor</span><span class="params">(Class&lt;? extends TableScan&gt; tableScanClass)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> withOperandSupplier(b0 -&gt;</span><br><span class="line">                    b0.operand(tableScanClass).anyInputs())</span><br><span class="line">                    .as(JackyTableRenameRule.Config.class);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><p>下面是实例化规则，并加入优化代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">HepProgramBuilder</span> <span class="variable">hepProgramBuilder</span> <span class="operator">=</span> HepProgram.builder();</span><br><span class="line"></span><br><span class="line"><span class="type">JackyTableRenameRule</span> <span class="variable">jtrr</span> <span class="operator">=</span> JackyTableRenameRule.Config.DEFAULT.toRule(<span class="string">&quot;consumers&quot;</span>,<span class="string">&quot;consumers_1&quot;</span>);</span><br><span class="line">jtrr.setFrameworkConfig(frameworkConfig);</span><br><span class="line"></span><br><span class="line">hepProgramBuilder.addRuleInstance(jtrr);</span><br><span class="line"></span><br><span class="line"><span class="type">HepProgram</span> <span class="variable">program</span> <span class="operator">=</span> hepProgramBuilder.build();</span><br><span class="line"><span class="type">HepPlanner</span> <span class="variable">hepPlanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HepPlanner</span>(program);</span><br><span class="line">hepPlanner.setRoot(opTree);</span><br><span class="line"><span class="type">RelNode</span> <span class="variable">r</span> <span class="operator">=</span> hepPlanner.findBestExp();</span><br></pre></td></tr></table></figure>
+
+<p>完整测试代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.dafei1288;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.adapter.csv.CsvSchema;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.adapter.csv.CsvTable;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.RelOptUtil;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.hep.HepPlanner;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.hep.HepProgram;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.plan.hep.HepProgramBuilder;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.RelNode;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.RelWriter;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.core.JoinRelType;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.externalize.RelWriterImpl;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.rel.rules.FilterJoinRule;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.schema.SchemaPlus;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.sql.fun.SqlStdOperatorTable;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.sql.parser.SqlParser;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.FrameworkConfig;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.Frameworks;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.RelBuilder;</span><br><span class="line"><span class="keyword">import</span> org.apache.calcite.tools.RelRunners;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.File;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSet;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JackSqlRewriteCase</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">SchemaPlus</span> <span class="variable">rootSchema</span> <span class="operator">=</span> Frameworks.createRootSchema(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">csvPath</span> <span class="operator">=</span> <span class="string">&quot;src\\main\\resources\\db&quot;</span>;</span><br><span class="line">        <span class="type">CsvSchema</span> <span class="variable">csvSchema</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CsvSchema</span>(<span class="keyword">new</span> <span class="title class_">File</span>(csvPath), CsvTable.Flavor.SCANNABLE);</span><br><span class="line">        rootSchema.add(<span class="string">&quot;consumers&quot;</span>, csvSchema.getTable(<span class="string">&quot;consumers&quot;</span>));</span><br><span class="line">        rootSchema.add(<span class="string">&quot;consumers_1&quot;</span>, csvSchema.getTable(<span class="string">&quot;consumers_1&quot;</span>));</span><br><span class="line">        rootSchema.add(<span class="string">&quot;orders&quot;</span>, csvSchema.getTable(<span class="string">&quot;orders&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="type">FrameworkConfig</span> <span class="variable">frameworkConfig</span> <span class="operator">=</span> Frameworks.newConfigBuilder()</span><br><span class="line">                .parserConfig(SqlParser.Config.DEFAULT)</span><br><span class="line">                .defaultSchema(rootSchema)</span><br><span class="line">                .build();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="type">RelBuilder</span> <span class="variable">relBuilder</span> <span class="operator">=</span> RelBuilder.create(frameworkConfig);</span><br><span class="line"></span><br><span class="line">        <span class="type">RelNode</span> <span class="variable">cnode</span> <span class="operator">=</span> relBuilder.scan(<span class="string">&quot;consumers&quot;</span>).build();</span><br><span class="line">        System.out.println(<span class="string">&quot;==&gt; &quot;</span>+ RelOptUtil.toString(cnode));</span><br><span class="line"></span><br><span class="line">        cnode = relBuilder.scan(<span class="string">&quot;consumers&quot;</span>).project(relBuilder.field(<span class="string">&quot;firstname&quot;</span>),</span><br><span class="line">                relBuilder.field(<span class="string">&quot;lastname&quot;</span>)).build();</span><br><span class="line">        System.out.println(<span class="string">&quot;==&gt; &quot;</span>+RelOptUtil.toString(cnode));</span><br><span class="line"></span><br><span class="line">        <span class="type">RelNode</span> <span class="variable">opTree</span> <span class="operator">=</span> relBuilder</span><br><span class="line">                .scan(<span class="string">&quot;consumers&quot;</span>)</span><br><span class="line">                .project(</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;id&quot;</span>),</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;firstname&quot;</span>),</span><br><span class="line">                        relBuilder.field(<span class="string">&quot;lastname&quot;</span>))</span><br><span class="line">                .build();</span><br><span class="line"></span><br><span class="line">        <span class="type">RelWriter</span> <span class="variable">rw</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RelWriterImpl</span>(<span class="keyword">new</span> <span class="title class_">PrintWriter</span>(System.out, <span class="literal">true</span>));</span><br><span class="line">        opTree.explain(rw);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        System.out.println();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="type">HepProgramBuilder</span> <span class="variable">hepProgramBuilder</span> <span class="operator">=</span> HepProgram.builder();</span><br><span class="line"></span><br><span class="line">        <span class="type">JackyTableRenameRule</span> <span class="variable">jtrr</span> <span class="operator">=</span> JackyTableRenameRule.Config.DEFAULT.toRule(<span class="string">&quot;consumers&quot;</span>,<span class="string">&quot;consumers_1&quot;</span>);</span><br><span class="line">        jtrr.setFrameworkConfig(frameworkConfig);</span><br><span class="line"></span><br><span class="line">        hepProgramBuilder.addRuleInstance(jtrr);</span><br><span class="line"></span><br><span class="line">        <span class="type">HepProgram</span> <span class="variable">program</span> <span class="operator">=</span> hepProgramBuilder.build();</span><br><span class="line">        <span class="type">HepPlanner</span> <span class="variable">hepPlanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HepPlanner</span>(program);</span><br><span class="line">        hepPlanner.setRoot(opTree);</span><br><span class="line">        <span class="type">RelNode</span> <span class="variable">r</span> <span class="operator">=</span> hepPlanner.findBestExp();</span><br><span class="line">        r.explain(rw);</span><br><span class="line"></span><br><span class="line">        System.out.println();</span><br><span class="line"></span><br><span class="line">        <span class="type">ResultSet</span> <span class="variable">result</span> <span class="operator">=</span> RelRunners.run(r).executeQuery();</span><br><span class="line">        <span class="type">int</span> <span class="variable">columns</span> <span class="operator">=</span> result.getMetaData().getColumnCount();</span><br><span class="line">        <span class="keyword">while</span> (result.next()) &#123;</span><br><span class="line">            System.out.println(result.getString(<span class="number">1</span>) + <span class="string">&quot; &quot;</span> + result.getString(<span class="number">2</span>) +  <span class="string">&quot; &quot;</span> + result.getString(<span class="number">3</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="结果展示"><a href="#结果展示" class="headerlink" title="结果展示"></a>结果展示</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">==&gt; LogicalTableScan(table=[[consumers]])</span><br><span class="line"></span><br><span class="line">==&gt; LogicalProject(firstname=[$1], lastname=[$2])</span><br><span class="line">  LogicalTableScan(table=[[consumers]])</span><br><span class="line"></span><br><span class="line">4:LogicalProject(id=[$0], firstname=[$1], lastname=[$2])</span><br><span class="line">  3:LogicalTableScan(table=[[consumers]])</span><br><span class="line"></span><br><span class="line">6:LogicalProject(id=[$0], firstname=[$1], lastname=[$2])</span><br><span class="line">  8:LogicalTableScan(table=[[consumers_1]])</span><br><span class="line"></span><br><span class="line">1 liu jacky</span><br><span class="line">2 liu doudou</span><br><span class="line">3 liu maimai</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure>
+
+
+<p>可以通过执行计划看到 <code>LogicalTableScan</code> 由 <code>consumers</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4:LogicalProject(id=[$0], firstname=[$1], lastname=[$2])</span><br><span class="line">  3:LogicalTableScan(table=[[consumers]])</span><br></pre></td></tr></table></figure>
+<p>转变到了 <code>consumers_1</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">6:LogicalProject(id=[$0], firstname=[$1], lastname=[$2])</span><br><span class="line">  8:LogicalTableScan(table=[[consumers_1]])</span><br></pre></td></tr></table></figure>
+<p>查询出来的数据，也证明了执行计划的变更。</p>
+<h2 id="SqlNode-RelNode-RexNode"><a href="#SqlNode-RelNode-RexNode" class="headerlink" title="SqlNode RelNode RexNode"></a>SqlNode RelNode RexNode</h2><p>首先我们补充一下，对SqlNode、RelNode、RexNode的理解</p>
+<p><img src="/./img/blog/1004/ast2logicplan.png"></p>
+<ol>
+<li>SqlNode 是 Parse、Validate 阶段的结果，对应 SQL 转换为语法树后的每个节点，例如 SqlSelect SqlJoin.</li>
+<li>RelNode 是 SqlToRelConverter、Optimize 阶段的结果，对应语法树转换为关系运算符的节点，例如 LogicalProject LogicalJoin，这些节点操作的都是集合，是关系代数运算符的一种，即 relational expression.</li>
+<li>RexNode 跟 RelNode 位于同一阶段，操作的是数据本身，例如limit 5里的 5 是RexLiteral，b.publish_year &gt; 1830、b.author_id &#x3D; a.id都是RexCall，对应常量、函数的表达式，即 Expression Node.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SqlNode is the abstract syntax tree that represents the actual structure of the query a user input. When a query is first parsed, it&#x27;s parsed into a SqlNode. For example, a SELECT query will be parsed into a SqlSelect with a list of fields, a table, a join, etc. Calcite is also capable of generating a query string from a SqlNode as well.</span><br><span class="line"></span><br><span class="line">RelNode represents a relational expression - hence &quot;rel.&quot; RelNodes are used in the optimizer to decide how to execute a query. Examples of relational expressions are join, filter, aggregate, etc. Typically, specific implementations of RelNode will be created by users of Calcite to represent the execution of some expression in their system. When a query is first converted from SqlNode to RelNode, it will be made up of logical nodes like LogicalProject, LogicalJoin, etc. Optimizer rules are then used to convert from those logical nodes to physical ones like JdbcJoin, SparkJoin, CassandraJoin, or whatever the system requires. Traits and conventions are used by the optimizer to determine the set of rules to apply and the desired outcome, but you didn&#x27;t ask about conventions :-)</span><br><span class="line"></span><br><span class="line">RexNode represents a row expression - hence &quot;Rex&quot; - that&#x27;s typically contained within a RelNode. The row expression contains operations performed on a single row. For example, a Project will contain a list of RexNodes that represent the projection&#x27;s fields. A RexNode might be a reference to a field from an input to the RedNode, a function call (RexCall), a window (RexOver), etc. The operator within the RexCall defines what the node does, and operands define arguments to the operator. For example, 1 + 1 would be represented as a RexCall where the operator is + and the operands are 1 and 1.</span><br><span class="line"></span><br><span class="line">What RelNode and RexNode together give you is a way to plan and implement a query. Systems typically use VolcanoPlanner (cost-based) or HepPlanner (heuristic) to convert the logical plan (RelNode) into a physical plan and then implement the plan by converting each RelNode and RexNode into whatever is required by the system for which the plan is generated. The optimizer might push down or pull up expressions or reorder joins to create a more optimal plan. Then, to implement that plan, e.g. the JDBC integration will convert an optimized RelNode back into a SqlNode and then a query string to be executed against some database over JDBC. The Spark implementation will convert RelNodes into operations on a Spark RDD. The Cassandra implementation will generate a CQL query, etc.</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="参考连接"><a href="#参考连接" class="headerlink" title="参考连接"></a>参考连接</h2><p><a target="_blank" rel="noopener" href="https://lists.apache.org/thread/z3pvzy1fnl6t5m04gd3wv4tntwpf3g52">https://lists.apache.org/thread/z3pvzy1fnl6t5m04gd3wv4tntwpf3g52</a></p>
+<p><a target="_blank" rel="noopener" href="https://izualzhy.cn/calcite-example">https://izualzhy.cn/calcite-example</a></p>
+<p><a target="_blank" rel="noopener" href="http://matt33.com/2019/03/17/apache-calcite-planner/">http://matt33.com/2019/03/17/apache-calcite-planner/</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61661909">https://zhuanlan.zhihu.com/p/61661909</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010022051/article/details/125609517">https://blog.csdn.net/u010022051/article/details/125609517</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/database/" rel="tag"># database</a>
+              <a href="/tags/calcite/" rel="tag"># calcite</a>
+              <a href="/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/" rel="tag"># 编译原理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/08/10/1003-calcite-sql-rule/" rel="prev" title="如何使用calcite rule做SQL重写（上）">
+                  <i class="fa fa-chevron-left"></i> 如何使用calcite rule做SQL重写（上）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/01/05/1005-jimlang_with_llm/" rel="next" title="一种基于LLM（大语言模型）的栈机实现">
+                  一种基于LLM（大语言模型）的栈机实现 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">津ICP备 15004116号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2014 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dafei1288</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>违法和不良信息举报电话: 022-26562406 | 举报邮箱 : jianfeiya2023@163.com | 网站举报入口: www.qinglangtianjin.com
+
+    </div>
+  </footer>
+
+  
+  <script type="text/javascript" src="/js/third-party/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"jacky128899","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>
